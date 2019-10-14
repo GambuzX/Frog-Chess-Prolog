@@ -9,15 +9,24 @@
  *          - Other caracters are used to represent the board 
  */
 display_game(Board, Player) :-
-    display_board(Board).
+    display_board([
+    [empty, empty, empty, empty, empty, empty, empty, empty],
+    [empty, pink, yellow, yellow, pink, pink, yellow, empty],
+    [empty, pink, pink, pink, yellow, yellow, yellow, empty],
+    [empty, pink, pink, yellow, pink, yellow, yellow, empty],
+    [empty, pink, pink, yellow, pink, yellow, yellow, empty],
+    [empty, yellow, yellow, pink, yellow, pink, pink, empty],
+    [empty, pink, yellow, pink, yellow, pink, yellow, empty],
+    [empty, empty, empty, empty, empty, empty, empty, empty]
+]).
 
 
 display_board([X| Y]) :-
     put_code(201),
     put_code(205), 
     display_first_line(X),
-    display_rest_board(Y).
-
+    nl,
+    display_rest_board([X|Y]).
 
 display_rest_board([]) :- 
     put_code(200), 
@@ -30,6 +39,7 @@ display_rest_board([L1|L]) :-
     nl,
     (
         L \= [],
+        put_code(204),
         display_empty_line(L1),
         nl;
         L = []
@@ -37,7 +47,9 @@ display_rest_board([L1|L]) :-
     display_rest_board(L).
 
 
-display_first_line([]) :- put_code(187).
+display_first_line([X|[]]) :- 
+    put_code(187).
+
 display_first_line([X|Y]) :-
     put_code(203),
     put_code(205),
@@ -45,6 +57,7 @@ display_first_line([X|Y]) :-
 
 
 display_last_line(0) :- put_code(188).
+
 display_last_line(N) :-
     put_code(202),
     put_code(205),
@@ -59,7 +72,9 @@ display_line([X|Y]) :-
     put_code(186),
     display_line(Y).
 
-display_empty_line([]).
+display_empty_line([X|[]]) :- 
+    put_code(205),
+    put_code(185).
 display_empty_line([X|Y]) :-
     put_code(205),
     put_code(206),
