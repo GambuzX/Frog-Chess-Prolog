@@ -16,29 +16,47 @@ display_game(Board, Player) :-
 
 display_board(Board) :- display_board_helper(Board, 0).
 
-display_board_helper([], _).
+/*
 
+*/
+display_board_helper([], _).
 display_board_helper([Curr_Row|Rest], RowN) :-
     RowN < 8,
     display_row(Curr_Row, RowN), 
     NextRow is RowN + 1,
     display_board_helper(Rest, NextRow).
 
+/*
+
+*/
 display_row(Row, 0) :-
+    write(' '),
+    display_col_head(0), nl,
+    write(' '),
     display_top(0), nl,
+    write(1),
     display_frog_row(Row, 0), nl,
+    write(' '),
     display_div(0), nl.
 
 display_row(Row, 7) :-
+    write(8),
     display_frog_row(Row, 0), nl,
+    write(' '),
     display_bottom(0), nl.
 
 display_row(Row, RowN) :-
     RowN > 0,   
     RowN < 7,
+    N is RowN+1,
+    write(N),
     display_frog_row(Row, 0), nl,
+    write(' '),
     display_div(0), nl.
 
+/*
+
+*/
 display_frog_row([], _).
 
 display_frog_row([Frog|Rest], 0) :-
@@ -55,6 +73,28 @@ display_frog_row([Frog|Rest], ColN) :-
     NextCol is ColN + 1,
     display_frog_row(Rest, NextCol).
 
+/*
+
+*/
+
+display_col_head(7) :-
+    put_char(' '),
+    write(8),
+    put_char(' ').
+
+display_col_head(ColN) :-
+    ColN >= 0,
+    ColN < 7,
+    N is ColN+1,
+    put_char(' '),
+    write(N),
+    NextCol is ColN + 1,
+    display_col_head(NextCol).
+
+
+/*
+
+*/
 display_top(0) :-
     put_code(201),
     put_code(205), 
@@ -73,6 +113,10 @@ display_top(ColN) :-
     NextCol is ColN + 1,
     display_top(NextCol).
 
+
+/*
+
+*/
 display_bottom(0) :-
     put_code(200), 
     put_code(205),
@@ -91,6 +135,10 @@ display_bottom(ColN) :-
     NextCol is ColN + 1,
     display_bottom(NextCol).
 
+
+/*
+
+*/
 display_div(0):- 
     put_code(204),
     put_code(205),
@@ -109,6 +157,10 @@ display_div(ColN) :-
     NextCol is ColN + 1,
     display_div(NextCol).
 
+
+/*
+
+*/
 display_player_frog(X) :-
     X = empty,
     put_char(' ').
