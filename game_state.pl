@@ -14,18 +14,18 @@ emptyBoard([
 
 
 /*
-    18 yellow frogs
+    18 green frogs
     18 pink frogs
     28 empty cells, the board edges
 */
 initialBoard([
     [empty, empty, empty, empty, empty, empty, empty, empty],
-    [empty, pink, yellow, yellow, pink, pink, yellow, empty],
-    [empty, pink, pink, pink, yellow, yellow, yellow, empty],
-    [empty, pink, pink, yellow, pink, yellow, yellow, empty],
-    [empty, pink, pink, yellow, pink, yellow, yellow, empty],
-    [empty, yellow, yellow, pink, yellow, pink, pink, empty],
-    [empty, pink, yellow, pink, yellow, pink, yellow, empty],
+    [empty, pink, green, green, pink, pink, green, empty],
+    [empty, pink, pink, pink, green, green, green, empty],
+    [empty, pink, pink, green, pink, green, green, empty],
+    [empty, pink, pink, green, pink, green, green, empty],
+    [empty, green, green, pink, green, pink, pink, empty],
+    [empty, pink, green, pink, green, pink, green, empty],
     [empty, empty, empty, empty, empty, empty, empty, empty]
 ]).
 
@@ -35,16 +35,16 @@ initialBoard([
 intermediateBoard([
     [empty, empty, empty, empty, empty, empty, empty, empty],
     [empty, pink, pink, empty, empty, empty, pink, empty],
-    [empty, pink, pink, empty, yellow, empty, empty, empty],
-    [empty, pink, empty, empty, yellow, yellow, yellow, empty],
+    [empty, pink, pink, empty, green, empty, empty, empty],
+    [empty, pink, empty, empty, green, green, green, empty],
     [empty, pink, pink, empty, pink, empty, empty, empty],
-    [empty, yellow, pink, empty, empty, empty, pink, empty],
-    [empty, empty, yellow, empty, yellow, pink, yellow, empty],
+    [empty, green, pink, empty, empty, empty, pink, empty],
+    [empty, empty, green, empty, green, pink, green, empty],
     [empty, empty, empty, empty, empty, empty, empty, empty]
 ]).
 
 /*
-    The only yellow frog in the bottom-right corner is isolated.
+    The only green frog in the bottom-right corner is isolated.
     Pink player wins.
 */
 isolatedPiece([
@@ -54,21 +54,21 @@ isolatedPiece([
     [empty, pink, empty, empty, empty, empty, empty, empty],
     [empty, pink, pink, empty, empty, empty, empty, empty],
     [empty, empty, pink, empty, empty, empty, empty, empty],
-    [empty, empty, empty, empty, empty, empty, yellow, empty],
+    [empty, empty, empty, empty, empty, empty, green, empty],
     [empty, empty, empty, empty, empty, empty, empty, empty]
 ]).
 
 /*
-    Pink player has no frogs left and yellow player made the last move.
-    Yellow player wins.
+    Pink player has no frogs left and green player made the last move.
+    green player wins.
 */
 noPinkFrogsLeft([
     [empty, empty, empty, empty, empty, empty, empty, empty],
     [empty, empty, empty, empty, empty, empty, empty, empty],
-    [empty, empty, empty, empty, yellow, empty, empty, empty],
+    [empty, empty, empty, empty, green, empty, empty, empty],
     [empty, empty, empty, empty, empty, empty, empty, empty],
     [empty, empty, empty, empty, empty, empty, empty, empty],
-    [empty, empty, yellow, empty, empty, yellow, empty, empty],
-    [empty, empty, empty, empty, empty, yellow, yellow, empty],
+    [empty, empty, green, empty, empty, green, empty, empty],
+    [empty, empty, empty, empty, empty, green, green, empty],
     [empty, empty, empty, empty, empty, empty, empty, empty]
 ]).
