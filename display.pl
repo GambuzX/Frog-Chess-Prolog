@@ -1,3 +1,5 @@
+:- include('game_state.pl').
+
 /* Display Game 
  * display_game(+Board, +Player)
  *
@@ -9,77 +11,103 @@
  *          - Other caracters are used to represent the board 
  */
 display_game(Board, Player) :-
-    display_board([
-    [empty, empty, empty, empty, empty, empty, empty, empty],
-    [empty, pink, yellow, yellow, pink, pink, yellow, empty],
-    [empty, pink, pink, pink, yellow, yellow, yellow, empty],
-    [empty, pink, pink, yellow, pink, yellow, yellow, empty],
-    [empty, pink, pink, yellow, pink, yellow, yellow, empty],
-    [empty, yellow, yellow, pink, yellow, pink, pink, empty],
-    [empty, pink, yellow, pink, yellow, pink, yellow, empty],
-    [empty, empty, empty, empty, empty, empty, empty, empty]
-]).
+    initialBoard(Board),
+    display_board(Board).
 
+display_board(Board) :- display_board_helper(Board, 0).
 
-display_board([X| Y]) :-
+display_board_helper([], _).
+
+display_board_helper([Curr_Row|Rest], RowN) :-
+    RowN < 8,
+    display_row(Curr_Row, RowN), 
+    NextRow is RowN + 1,
+    display_board_helper(Rest, NextRow).
+
+display_row(Row, 0) :-
+    display_top(0), nl,
+    display_frog_row(Row, 0), nl,
+    display_div(0), nl.
+
+display_row(Row, 7) :-
+    display_frog_row(Row, 0), nl,
+    display_bottom(0), nl.
+
+display_row(Row, RowN) :-
+    RowN > 0,   
+    RowN < 7,
+    display_frog_row(Row, 0), nl,
+    display_div(0), nl.
+
+display_frog_row([], _).
+
+display_frog_row([Frog|Rest], 0) :-
+    put_code(186),
+    display_player_frog(Frog),
+    put_code(186),
+    display_frog_row(Rest, 1).
+
+display_frog_row([Frog|Rest], ColN) :-
+    ColN > 0,
+    ColN < 8,
+    display_player_frog(Frog),
+    put_code(186),
+    NextCol is ColN + 1,
+    display_frog_row(Rest, NextCol).
+
+display_top(0) :-
     put_code(201),
     put_code(205), 
-    display_first_line(X),
-    nl,
-    display_rest_board([X|Y]).
+    put_code(203),
+    display_top(1).
 
-display_rest_board([]) :- 
-    put_code(200), 
-    put_code(205),
-    display_last_line(7).
-
-display_rest_board([L1|L]) :-
-    put_code(186),
-    display_line(L1),
-    nl,
-    (
-        L \= [],
-        put_code(204),
-        display_empty_line(L1),
-        nl;
-        L = []
-    ),
-    display_rest_board(L).
-
-
-display_first_line([X|[]]) :- 
+display_top(7) :-
+    put_code(205), 
     put_code(187).
 
-display_first_line([X|Y]) :-
+display_top(ColN) :-
+    ColN > 0,
+    ColN < 7,
+    put_code(205),
     put_code(203),
+    NextCol is ColN + 1,
+    display_top(NextCol).
+
+display_bottom(0) :-
+    put_code(200), 
     put_code(205),
-    display_first_line(Y).
-
-
-display_last_line(0) :- put_code(188).
-
-display_last_line(N) :-
     put_code(202),
+    display_bottom(1).
+
+display_bottom(7) :-
     put_code(205),
-    N1 is N - 1,
-    display_last_line(N1).
+    put_code(188).
 
-
-display_line([]).
-
-display_line([X|Y]) :-
-    display_player_frog(X),
-    put_code(186),
-    display_line(Y).
-
-display_empty_line([X|[]]) :- 
+display_bottom(ColN) :-
+    ColN > 0,
+    ColN < 7,
     put_code(205),
-    put_code(185).
-display_empty_line([X|Y]) :-
+    put_code(202),
+    NextCol is ColN + 1,
+    display_bottom(NextCol).
+
+display_div(0):- 
+    put_code(204),
     put_code(205),
     put_code(206),
-    display_empty_line(Y).
+    display_div(1).
+    
+display_div(7) :-
+    put_code(205),
+    put_code(185).
 
+display_div(ColN) :-
+    ColN > 0,
+    ColN < 7,
+    put_code(205),
+    put_code(206),
+    NextCol is ColN + 1,
+    display_div(NextCol).
 
 display_player_frog(X) :-
     X = empty,
