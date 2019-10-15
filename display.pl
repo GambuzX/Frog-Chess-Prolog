@@ -1,4 +1,5 @@
 :- include('game_state.pl').
+:- include(library(ansi_term)).
 
 /* Display Game 
  * display_game(+Board, +Player)
@@ -11,8 +12,10 @@
  *          - Other caracters are used to represent the board 
  */
 display_game(Board, Player) :-
+    nl,
     initialBoard(Board),
-    display_board(Board).
+    display_board(Board),
+    nl.
 
 display_board(Board) :- display_board_helper(Board, 0).
 
@@ -34,13 +37,13 @@ display_row(Row, 0) :-
     display_col_head(0), nl,
     write(' '),
     display_top(0), nl,
-    write(1),
+    ansi_format([fg(green)], '~w', ['1']),
     display_frog_row(Row, 0), nl,
     write(' '),
     display_div(0), nl.
 
 display_row(Row, 7) :-
-    write(8),
+    ansi_format([fg(green)], '~w', ['8']),
     display_frog_row(Row, 0), nl,
     write(' '),
     display_bottom(0), nl.
@@ -49,7 +52,7 @@ display_row(Row, RowN) :-
     RowN > 0,   
     RowN < 7,
     N is RowN+1,
-    write(N),
+    ansi_format([fg(green)], '~w', [N]),
     display_frog_row(Row, 0), nl,
     write(' '),
     display_div(0), nl.
@@ -79,7 +82,7 @@ display_frog_row([Frog|Rest], ColN) :-
 
 display_col_head(7) :-
     put_char(' '),
-    write(8),
+    ansi_format([fg(green)], '~w', [8]),
     put_char(' ').
 
 display_col_head(ColN) :-
@@ -87,7 +90,7 @@ display_col_head(ColN) :-
     ColN < 7,
     N is ColN+1,
     put_char(' '),
-    write(N),
+    ansi_format([fg(green)], '~w', [N]),
     NextCol is ColN + 1,
     display_col_head(NextCol).
 
@@ -167,8 +170,8 @@ display_player_frog(X) :-
 
 display_player_frog(X) :-
     X = yellow,
-    put_char('Y').
+    ansi_format([fg(yellow)], '~w', ['Y']).
 
 display_player_frog(X) :-
     X = pink,
-    put_char('P').
+    ansi_format([fg(magenta)], '~w', ['P']).
