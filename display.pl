@@ -1,6 +1,10 @@
 :- include('game_state.pl').
 :- include(library(ansi_term)).
 
+
+player_frog(1, pink).
+player_frog(2, green).
+
 frog_color(pink, magenta).
 frog_color(green, green).
 
@@ -16,10 +20,21 @@ frog_color(green, green).
  *          - Other caracters are used to represent the board 
  */
 display_game(Board, Player) :-
-    nl,
+    player_frog(Player, _), nl,
     initialBoard(Board),
-    display_board(Board),
-    nl.
+    display_board(Board), nl,
+    display_turn(Player).
+
+display_turn(Player) :-
+    player_frog(Player, Frog),
+    frog_color(Frog, Color),
+
+    write('                     '), display_frog_ascii_1(Frog), nl,
+    write('  /===============\\  '), display_frog_ascii_2(Frog), nl,
+    write('  | Player '), ansi_format([fg(Color)], '~d', [Player]), write(' Turn |'), write('  '), display_frog_ascii_3(Frog), nl,
+    write('  \\===============/  '), display_frog_ascii_4(Frog), nl,
+    write('                     '), display_frog_ascii_5(Frog), nl, nl.
+
 
 display_board(Board) :- display_board_helper(Board, 0).
 
