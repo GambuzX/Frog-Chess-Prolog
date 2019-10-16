@@ -1,6 +1,10 @@
 :- include('game_state.pl').
 :- include(library(ansi_term)).
 
+frog_color(pink, magenta).
+frog_color(green, green).
+
+
 /* Display Game 
  * display_game(+Board, +Player)
  *
@@ -65,14 +69,17 @@ display_row_frogs(Row, N) :-
 
 */
 display_frog_row_1([], _).
+
+display_frog_row_1([Frog|Rest], 0) :-    
+    put_code(186),
+    display_frog_ascii_1(Frog),
+    put_code(186),
+    display_frog_row_1(Rest, 1).
+
+
 display_frog_row_1([Frog|Rest], ColN) :-
-    ColN >= 0,
+    ColN > 0,
     ColN < 8,
-    (
-        ColN = 0,
-        put_code(186);
-        1 = 1
-    ),
     display_frog_ascii_1(Frog),
     put_code(186),
     NextCol is ColN + 1,
@@ -83,14 +90,17 @@ display_frog_row_1([Frog|Rest], ColN) :-
 
 */
 display_frog_row_2([], _).
+
+display_frog_row_2([Frog|Rest], 0) :-    
+    put_code(186),
+    display_frog_ascii_2(Frog),
+    put_code(186),
+    display_frog_row_2(Rest, 1).
+
+
 display_frog_row_2([Frog|Rest], ColN) :-
-    ColN >= 0,
+    ColN > 0,
     ColN < 8,
-    (
-        ColN = 0,
-        put_code(186);
-        1 = 1
-    ),
     display_frog_ascii_2(Frog),
     put_code(186),
     NextCol is ColN + 1,
@@ -101,14 +111,17 @@ display_frog_row_2([Frog|Rest], ColN) :-
 
 */
 display_frog_row_3([], _).
+
+display_frog_row_3([Frog|Rest], 0) :-    
+    put_code(186),
+    display_frog_ascii_3(Frog),
+    put_code(186),
+    display_frog_row_3(Rest, 1).
+
+
 display_frog_row_3([Frog|Rest], ColN) :-
-    ColN >= 0,
+    ColN > 0,
     ColN < 8,
-    (
-        ColN = 0,
-        put_code(186);
-        1 = 1
-    ),
     display_frog_ascii_3(Frog),
     put_code(186),
     NextCol is ColN + 1,
@@ -119,14 +132,16 @@ display_frog_row_3([Frog|Rest], ColN) :-
 
 */
 display_frog_row_4([], _).
+
+display_frog_row_4([Frog|Rest], 0) :-    
+    put_code(186),
+    display_frog_ascii_4(Frog),
+    put_code(186),
+    display_frog_row_4(Rest, 1).
+
 display_frog_row_4([Frog|Rest], ColN) :-
-    ColN >= 0,
+    ColN > 0,
     ColN < 8,
-    (
-        ColN = 0,
-        put_code(186);
-        1 = 1
-    ),
     display_frog_ascii_4(Frog),
     put_code(186),
     NextCol is ColN + 1,
@@ -137,8 +152,15 @@ display_frog_row_4([Frog|Rest], ColN) :-
 
 */
 display_frog_row_5([], _).
+
+display_frog_row_5([Frog|Rest], 0) :-    
+    put_code(186),
+    display_frog_ascii_5(Frog),
+    put_code(186),
+    display_frog_row_5(Rest, 1).
+
 display_frog_row_5([Frog|Rest], ColN) :-
-    ColN >= 0,
+    ColN > 0,
     ColN < 8,
     (
         ColN = 0,
@@ -172,17 +194,19 @@ display_col_head(ColN) :-
 /*
 
 */
+display_top(0) :-
+    put_code(201),
+    display_div_line(15),
+    put_code(203),
+    display_top(1).
+
 display_top(7) :-
     display_div_line(15),
     put_code(187).
 
 display_top(ColN) :-
-    ColN >= 0,
+    ColN > 0,
     ColN < 7,
-    (
-        ColN = 0, put_code(201);
-        1 = 1
-    ),
     display_div_line(15),
     put_code(203),
     NextCol is ColN + 1,
@@ -192,17 +216,19 @@ display_top(ColN) :-
 /*
 
 */
+display_bottom(0) :-
+    put_code(200),
+    display_div_line(15),
+    put_code(202),
+    display_bottom(1).
+
 display_bottom(7) :-
     display_div_line(15),
     put_code(188).
 
 display_bottom(ColN) :-
-    ColN >= 0,
+    ColN > 0,
     ColN < 7,
-    (
-        ColN = 0, put_code(200);
-        1 = 1
-    ),
     display_div_line(15),
     put_code(202),
     NextCol is ColN + 1,
@@ -211,13 +237,19 @@ display_bottom(ColN) :-
 
 /*
 
-*/    
+*/
+display_div(0) :-
+    put_code(204),
+    display_div_line(15),
+    put_code(206),
+    display_div(1).
+
 display_div(7) :-
     display_div_line(15),
     put_code(185).
 
 display_div(ColN) :-
-    ColN >= 0,
+    ColN > 0,
     ColN < 7,
     (
         ColN = 0, put_code(204);
@@ -230,7 +262,7 @@ display_div(ColN) :-
 
 display_div_line(0).
 display_div_line(Count) :-
-    Count >= 0,
+    Count > 0,
     put_code(205),
     %put_char('\u2550'),
     N is Count-1,
@@ -244,8 +276,8 @@ display_frog_ascii_1(X) :-
     write('               ').
 
 display_frog_ascii_1(X) :-
-    (X = green, Color = green; 
-    X = pink, Color = magenta),
+    X \= empty,
+    frog_color(X, Color),
     ansi_format([fg(Color)], '~w', ['    (\')=(\')    ']).
     
 /*
@@ -256,8 +288,8 @@ display_frog_ascii_2(X) :-
     write('               ').
 
 display_frog_ascii_2(X) :-
-    (X = green, Color = green; 
-    X = pink, Color = magenta),
+    X \= empty,
+    frog_color(X, Color),
     ansi_format([fg(Color)], '~w', ['  __(  "  )__  ']).
     
 /*
@@ -268,8 +300,8 @@ display_frog_ascii_3(X) :-
     write('               ').
 
 display_frog_ascii_3(X) :-
-    (X = green, Color = green; 
-    X = pink, Color = magenta),
+    X \= empty,
+    frog_color(X, Color),
     ansi_format([fg(Color)], '~w', [' / _/\'---\'\\_ \\ ']).
     
 /*
@@ -280,8 +312,8 @@ display_frog_ascii_4(X) :-
     write('               ').
 
 display_frog_ascii_4(X) :-
-    (X = green, Color = green; 
-    X = pink, Color = magenta),
+    X \= empty,
+    frog_color(X, Color),
     ansi_format([fg(Color)], '~w', ['_\\\\ \\\\   // //_']).
     
 /*
@@ -292,6 +324,6 @@ display_frog_ascii_5(X) :-
     write('               ').
 
 display_frog_ascii_5(X) :-
-    (X = green, Color = green; 
-    X = pink, Color = magenta),
+    X \= empty,
+    frog_color(X, Color),
     ansi_format([fg(Color)], '~w', ['>__)/_\\-/_\\(__<']).
