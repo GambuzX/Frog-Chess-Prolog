@@ -92,18 +92,17 @@ display_board_helper([Curr_Row|Rest], RowN) :-
 display_row(Row, 0) :-
     write('  '), display_col_head(0), nl,
     write('  '), display_top(0), nl,
-    display_row_frogs(Row, 1),    
+    display_row_frogs(Row, 0),    
     write('  '), display_div(0), nl.
 
 display_row(Row, 7) :-
-    display_row_frogs(Row, 8),
+    display_row_frogs(Row, 7),
     write('  '), display_bottom(0), nl.
 
 display_row(Row, RowN) :-
     RowN > 0,   
     RowN < 7,
-    N is RowN+1,
-    display_row_frogs(Row, N),
+    display_row_frogs(Row, RowN),
     write('  '), display_div(0), nl.
 
 /** 
@@ -118,7 +117,7 @@ display_row(Row, RowN) :-
 display_row_frogs(Row, N) :-
     write('  '), display_frog_row_1(Row, 0), nl,
     write('  '), display_frog_row_2(Row, 0), nl,
-    ansi_format([fg(blue)], '~w', [N]), write(' '), display_frog_row_3(Row, 0), nl,
+    ID is 97+N, ansi_format([fg(blue)], '~c', [ID]), write(' '), display_frog_row_3(Row, 0), nl,
     write('  '), display_frog_row_4(Row, 0), nl,
     write('  '), display_frog_row_5(Row, 0), nl.
 
