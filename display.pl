@@ -34,7 +34,6 @@ frog_color(green, green).
  */
 display_game(Board, Player) :-
     player_frog(Player, _), nl,
-    initialBoard(Board),
     display_board(Board), nl,
     display_turn(Player).
 
