@@ -249,11 +249,6 @@ display_frog_row_5([Frog|Rest], 0) :-
 display_frog_row_5([Frog|Rest], ColN) :-
     ColN > 0,
     ColN < 8,
-    (
-        ColN = 0,
-        put_code(186);
-        1 = 1
-    ),
     display_frog_ascii_5(Frog),
     put_code(186), % ║ 
     NextCol is ColN + 1,
@@ -354,10 +349,6 @@ display_div(7) :-
 display_div(ColN) :-
     ColN > 0,
     ColN < 7,
-    (
-        ColN = 0, put_code(204); % ╠
-        1 = 1
-    ),
     display_div_line(15),
     put_code(206), % ╬
     NextCol is ColN + 1,
