@@ -394,17 +394,17 @@ display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
 display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
     Content \= empty,
     (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
-    display_frog_ascii_1(Content, white).
+    display_frog_ascii_1(Content, default).
 
 display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
     Content = empty,
     (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
-    display_flower_ascii_1(_).
+    display_flower_ascii_1.
 
 display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
     Content = empty,
     (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
-    display_empty_line(_).
+    display_empty_line.
 
 /**
  * Display Content Ascii 2
@@ -424,17 +424,17 @@ display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
 display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
     Content \= empty,
     (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
-    display_frog_ascii_2(Content, white).
+    display_frog_ascii_2(Content, default).
 
 display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
     Content = empty,
     (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
-    display_flower_ascii_2(_).
+    display_flower_ascii_2.
 
 display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
     Content = empty,
     (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
-    display_empty_line(_).
+    display_empty_line.
 
 /**
  * Display Content Ascii 3
@@ -454,17 +454,17 @@ display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
 display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
     Content \= empty,
     (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
-    display_frog_ascii_3(Content, white).
+    display_frog_ascii_3(Content, default).
 
 display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
     Content = empty,
     (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
-    display_flower_ascii_3(_).
+    display_flower_ascii_3.
 
 display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
     Content = empty,
     (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
-    display_empty_line(_).
+    display_empty_line.
 
 /**
  * Display Content Ascii 4
@@ -484,17 +484,17 @@ display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
 display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
     Content \= empty,
     (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
-    display_frog_ascii_4(Content, white).
+    display_frog_ascii_4(Content, default).
 
 display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
     Content = empty,
     (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
-    display_flower_ascii_4(_).
+    display_flower_ascii_4.
 
 display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
     Content = empty,
     (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
-    display_empty_line(_).
+    display_empty_line.
 
 /**
  * Display Content Ascii 5
@@ -514,17 +514,17 @@ display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
 display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
     Content \= empty,
     (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
-    display_frog_ascii_5(Content, white).
+    display_frog_ascii_5(Content, default).
 
 display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
     Content = empty,
     (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
-    display_flower_ascii_5(_).
+    display_flower_ascii_5.
 
 display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
     Content = empty,
     (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
-    display_empty_line(_).
+    display_empty_line.
 
 /**
  * Display Frog Ascii 1
@@ -604,7 +604,7 @@ display_frog_ascii_5(Frog, _) :-
  * display_empty_line(_)
  * Displays an empty line. Used to fill empty cells that are not outer cells of the board.
  */
-display_empty_line(_) :-
+display_empty_line :-
     write('               ').
 
 /**
@@ -612,7 +612,7 @@ display_empty_line(_) :-
  * display_flower_ascii_1(_)
  * Displays the first line of a flower.
  */
-display_flower_ascii_1(_) :-
+display_flower_ascii_1 :-
     ansi_format([fg(green), bg(blue)], '~w', ['    ']),
     ansi_format([fg(black), bg(green)], '~w', ['/\\']),
     ansi_format([fg(black), bg(blue)], '~w', ['   ']),
@@ -624,7 +624,7 @@ display_flower_ascii_1(_) :-
  * display_flower_ascii_2(_)
  * Displays the second line of a flower.
  */
-display_flower_ascii_2(_) :-
+display_flower_ascii_2 :-
     ansi_format([fg(green), bg(blue)], '~w', ['   ']),
     ansi_format([fg(black), bg(green)], '~w', ['/  \\']),
     ansi_format([fg(black), bg(blue)], '~w', [' ']),
@@ -636,7 +636,7 @@ display_flower_ascii_2(_) :-
  * display_flower_ascii_3(_)
  * Displays the third line of a flower.
  */
-display_flower_ascii_3(_) :-
+display_flower_ascii_3 :-
     ansi_format([fg(green), bg(blue)], '~w', ['  ']),
     ansi_format([fg(black), bg(green)], '~w', ['|    v    |']),
     ansi_format([fg(green), bg(blue)], '~w', ['  ']).
@@ -646,7 +646,7 @@ display_flower_ascii_3(_) :-
  * display_flower_ascii_4(_)
  * Displays the fourth line of a flower.
  */
-display_flower_ascii_4(_) :-
+display_flower_ascii_4 :-
     ansi_format([fg(green), bg(blue)], '~w', ['  ']),
     ansi_format([fg(black), bg(green)], '~w', ['|         |']),
     ansi_format([fg(green), bg(blue)], '~w', ['  ']).
@@ -656,7 +656,7 @@ display_flower_ascii_4(_) :-
  * display_flower_ascii_5(_)
  * Displays the fifth line of a flower.
  */
-display_flower_ascii_5(_) :-
+display_flower_ascii_5 :-
     ansi_format([fg(green), bg(blue)], '~w', ['   ']),
     ansi_format([fg(black), bg(green)], '~w', ['\\_______/']),
     ansi_format([fg(green), bg(blue)], '~w', ['   ']).
