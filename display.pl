@@ -9,8 +9,8 @@
  * Number -> Number of the player. Since for now we only consider 2 players, it is either 1 or 2.
  * PlayerFrogColor -> Returns the frog color associated with the player number.
  */
-player_frog(1, pink).
-player_frog(2, green).
+player_frog(1, blue).
+player_frog(2, yellow).
 
 /**
  * Frog Color
@@ -20,8 +20,8 @@ player_frog(2, green).
  * PlayerFrogColor -> Color of the frog of a given player.
  * DisplayFrogColor -> Color used to display the specified frog. 
  */
-frog_color(pink, magenta).
-frog_color(green, green).
+frog_color(blue, cyan).
+frog_color(yellow, yellow).
 
 
 /**
@@ -50,7 +50,7 @@ display_turn(Player) :-
 
     write('                     '), display_frog_ascii_1(Frog), nl,
     write('  /===============\\  '), display_frog_ascii_2(Frog), nl,
-    write('  | Player '), ansi_format([fg(Color)], '~d', [Player]), write(' Turn |'), write('  '), display_frog_ascii_3(Frog), nl,
+    write('  | '), ansi_format([fg(black), bg(Color)], 'Player ~d Turn', [Player]), write(' |  '), display_frog_ascii_3(Frog), nl,
     write('  \\===============/  '), display_frog_ascii_4(Frog), nl,
     write('                     '), display_frog_ascii_5(Frog), nl, nl.
 
@@ -91,168 +91,173 @@ display_board_helper([Curr_Row|Rest], RowN) :-
 display_row(Row, 0) :-
     write('  '), display_col_head(0), nl,
     write('  '), display_top(0), nl,
-    display_row_frogs(Row, 0),    
+    display_row_content(Row, 0),    
     write('  '), display_div(0), nl.
 
 display_row(Row, 7) :-
-    display_row_frogs(Row, 7),
+    display_row_content(Row, 7),
     write('  '), display_bottom(0), nl.
 
 display_row(Row, RowN) :-
     RowN > 0,   
     RowN < 7,
-    display_row_frogs(Row, RowN),
+    display_row_content(Row, RowN),
     write('  '), display_div(0), nl.
 
 /** 
- * Display Row Frogs
- * display_row_frogs(+Row, +RowNumber)
+ * Display Row Content
+ * display_row_content(+Row, +RowNumber)
  * Display the content of a row in the board, spanning 5 lines.
  * In each third line, the row identifier is also displayed
  * 
  * Row -> List with a representation of a board row.
  * RowNumber -> Number of the row that will be displayed. The RowNumber is in range [0, 7].
  */
-display_row_frogs(Row, N) :-
-    write('  '), display_frog_row_1(Row, 0), nl,
-    write('  '), display_frog_row_2(Row, 0), nl,
-    ID is 97+N, ansi_format([fg(blue)], '~c', [ID]), write(' '), display_frog_row_3(Row, 0), nl,
-    write('  '), display_frog_row_4(Row, 0), nl,
-    write('  '), display_frog_row_5(Row, 0), nl.
+display_row_content(Row, RowNumber) :-
+    write('  '), display_content_row_1(Row, RowNumber, 0), nl,
+    write('  '), display_content_row_2(Row, RowNumber, 0), nl,
+    ID is 97+RowNumber, ansi_format([fg(blue)], '~c', [ID]), write(' '), display_content_row_3(Row, RowNumber, 0), nl,
+    write('  '), display_content_row_4(Row, RowNumber, 0), nl,
+    write('  '), display_content_row_5(Row, RowNumber, 0), nl.
 
 
 
 /**
- * Display Frog Row 1
- * display_frog_row_1(+Row, +ColumnNumber)
+ * Display Content Row 1
+ * display_content_row_1(+Row, +RowNumber, +ColumnNumber)
  * Display the first line of the content of a row, iterating over its columns.
  * It displays the first line of the frogs, empty space or the middle separators.
  *
  * Row -> List representing a board row.
+ * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
  * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
  */
-display_frog_row_1([], _).
+display_content_row_1([], _, _).
 
-display_frog_row_1([Frog|Rest], 0) :-    
+display_content_row_1([Content|Rest], RowNumber, 0) :-    
     put_code(186), % ║ 
-    display_frog_ascii_1(Frog),
+    display_content_ascii_1(Content, RowNumber, 0),
     put_code(186), % ║
-    display_frog_row_1(Rest, 1).
+    display_content_row_1(Rest, RowNumber, 1).
 
 
-display_frog_row_1([Frog|Rest], ColN) :-
+display_content_row_1([Content|Rest], RowNumber, ColN) :-
     ColN > 0,
     ColN < 8,
-    display_frog_ascii_1(Frog),
+    display_content_ascii_1(Content, RowNumber, ColN),
     put_code(186), % ║ 
     NextCol is ColN + 1,
-    display_frog_row_1(Rest, NextCol).
+    display_content_row_1(Rest, RowNumber, NextCol).
 
 
 /**
- * Display Frog Row 2
- * display_frog_row_2(+Row, +ColumnNumber)
+ * Display Content Row 2
+ * display_content_row_2(+Row, +RowNumber, +ColumnNumber)
  * Display the second line of the content of a row, iterating over its columns.
  * It displays the second line of the frogs, empty space or the middle separators.
  *
  * Row -> List representing a board row.
+ * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
  * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
  */
-display_frog_row_2([], _).
+display_content_row_2([], _, _).
 
-display_frog_row_2([Frog|Rest], 0) :-    
+display_content_row_2([Content|Rest], RowNumber, 0) :-    
     put_code(186), % ║ 
-    display_frog_ascii_2(Frog),
+    display_content_ascii_2(Content, RowNumber, 0),
     put_code(186), % ║ 
-    display_frog_row_2(Rest, 1).
+    display_content_row_2(Rest, RowNumber, 1).
 
 
-display_frog_row_2([Frog|Rest], ColN) :-
+display_content_row_2([Content|Rest], RowNumber, ColN) :-
     ColN > 0,
     ColN < 8,
-    display_frog_ascii_2(Frog),
+    display_content_ascii_2(Content, RowNumber, ColN),
     put_code(186), % ║ 
     NextCol is ColN + 1,
-    display_frog_row_2(Rest, NextCol).
+    display_content_row_2(Rest, RowNumber, NextCol).
 
 
 /**
- * Display Frog Row 3
- * display_frog_row_3(+Row, +ColumnNumber)
+ * Display Content Row 3
+ * display_content_row_3(+Row, +RowNumber, +ColumnNumber)
  * Display the third line of the content of a row, iterating over its columns.
  * It displays the third line of the frogs, empty space or the separators.
  *
  * Row -> List representing a board row.
+ * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
  * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
  */
-display_frog_row_3([], _).
+display_content_row_3([], _, _).
 
-display_frog_row_3([Frog|Rest], 0) :-    
+display_content_row_3([Content|Rest], RowNumber, 0) :-    
     put_code(186), % ║ 
-    display_frog_ascii_3(Frog),
+    display_content_ascii_3(Content, RowNumber, 0),
     put_code(186), % ║ 
-    display_frog_row_3(Rest, 1).
+    display_content_row_3(Rest, RowNumber, 1).
 
 
-display_frog_row_3([Frog|Rest], ColN) :-
+display_content_row_3([Content|Rest], RowNumber, ColN) :-
     ColN > 0,
     ColN < 8,
-    display_frog_ascii_3(Frog),
+    display_content_ascii_3(Content, RowNumber, ColN),
     put_code(186), % ║ 
     NextCol is ColN + 1,
-    display_frog_row_3(Rest, NextCol).
+    display_content_row_3(Rest, RowNumber, NextCol).
 
 
 /**
- * Display Frog Row 4
- * display_frog_row_4(+Row, +ColumnNumber)
+ * Display Content Row 4
+ * display_content_row_4(+Row, +RowNumber, +ColumnNumber)
  * Display the fourth line of the content of a row, iterating over its columns.
  * It displays the fourth line of the frogs, empty space or the separators.
  *
  * Row -> List representing a board row.
+ * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
  * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
  */
-display_frog_row_4([], _).
+display_content_row_4([], _, _).
 
-display_frog_row_4([Frog|Rest], 0) :-    
+display_content_row_4([Content|Rest], RowNumber, 0) :-    
     put_code(186), % ║ 
-    display_frog_ascii_4(Frog),
+    display_content_ascii_4(Content, RowNumber, 0),
     put_code(186), % ║ 
-    display_frog_row_4(Rest, 1).
+    display_content_row_4(Rest, RowNumber, 1).
 
-display_frog_row_4([Frog|Rest], ColN) :-
+display_content_row_4([Content|Rest], RowNumber, ColN) :-
     ColN > 0,
     ColN < 8,
-    display_frog_ascii_4(Frog),
+    display_content_ascii_4(Content, RowNumber, ColN),
     put_code(186), % ║ 
     NextCol is ColN + 1,
-    display_frog_row_4(Rest, NextCol).
+    display_content_row_4(Rest, RowNumber, NextCol).
 
 
 /**
- * Display Frog Row 5
- * display_frog_row_5(+Row, +ColumnNumber)
+ * Display Content Row 5
+ * display_content_row_5(+Row, +RowNumber, +ColumnNumber)
  * Display the fifth line of the content of a row, iterating over its columns.
  * It displays the fifth line of the frogs, empty space or the separators.
  *
  * Row -> List representing a board row.
+ * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
  * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
  */
-display_frog_row_5([], _).
+display_content_row_5([], _, _).
 
-display_frog_row_5([Frog|Rest], 0) :-    
+display_content_row_5([Content|Rest], RowNumber, 0) :-    
     put_code(186), % ║ 
-    display_frog_ascii_5(Frog),
+    display_content_ascii_5(Content, RowNumber, 0),
     put_code(186), % ║ 
-    display_frog_row_5(Rest, 1).
+    display_content_row_5(Rest, RowNumber, 1).
 
-display_frog_row_5([Frog|Rest], ColN) :-
+display_content_row_5([Content|Rest], RowNumber, ColN) :-
     ColN > 0,
     ColN < 8,
-    display_frog_ascii_5(Frog),
+    display_content_ascii_5(Content, RowNumber, ColN),
     put_code(186), % ║ 
     NextCol is ColN + 1,
-    display_frog_row_5(Rest, NextCol).
+    display_content_row_5(Rest, RowNumber, NextCol).
 
 /**
  * Display Column Header
@@ -370,86 +375,251 @@ display_div_line(Count) :-
     display_div_line(N).
 
 /**
+ * Display Content Ascii 1
+ * display_content_ascii_1(+Content, +RowNumber, +ColumnNumber)
+ * Displays the first line of a content row.
+ * Decides wheter to draw a frog, a flower of empty space, according to the Content.
+ *
+ * Content -> Content to print.
+ * RowNumber -> Row of the current cell.
+ * ColumnNumber -> Column of the current cell.
+ */
+display_content_ascii_1(Content, _, _) :-
+    Content \= empty,
+    display_frog_ascii_1(Content).
+
+display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
+    Content = empty,
+    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    display_flower_ascii_1(_).
+
+display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
+    Content = empty,
+    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    display_empty_line(_).
+
+/**
+ * Display Content Ascii 2
+ * display_content_ascii_2(+Content, +RowNumber, +ColumnNumber)
+ * Displays the second line of a content row.
+ * Decides wheter to draw a frog, a flower of empty space, according to the Content.
+ *
+ * Content -> Content to print.
+ * RowNumber -> Row of the current cell.
+ * ColumnNumber -> Column of the current cell.
+ */
+display_content_ascii_2(Content, _, _) :-
+    Content \= empty,
+    display_frog_ascii_2(Content).
+
+display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
+    Content = empty,
+    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    display_flower_ascii_2(_).
+
+display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
+    Content = empty,
+    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    display_empty_line(_).
+
+/**
+ * Display Content Ascii 3
+ * display_content_ascii_3(+Content, +RowNumber, +ColumnNumber)
+ * Displays the third line of a content row.
+ * Decides wheter to draw a frog, a flower of empty space, according to the Content.
+ *
+ * Content -> Content to print.
+ * RowNumber -> Row of the current cell.
+ * ColumnNumber -> Column of the current cell.
+ */
+display_content_ascii_3(Content, _, _) :-
+    Content \= empty,
+    display_frog_ascii_3(Content).
+
+display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
+    Content = empty,
+    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    display_flower_ascii_3(_).
+
+display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
+    Content = empty,
+    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    display_empty_line(_).
+
+/**
+ * Display Content Ascii 4
+ * display_content_ascii_4(+Content, +RowNumber, +ColumnNumber)
+ * Displays the fourth line of a content row.
+ * Decides wheter to draw a frog, a flower of empty space, according to the Content.
+ *
+ * Content -> Content to print.
+ * RowNumber -> Row of the current cell.
+ * ColumnNumber -> Column of the current cell.
+ */
+display_content_ascii_4(Content, _, _) :-
+    Content \= empty,
+    display_frog_ascii_4(Content).
+
+display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
+    Content = empty,
+    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    display_flower_ascii_4(_).
+
+display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
+    Content = empty,
+    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    display_empty_line(_).
+
+/**
+ * Display Content Ascii 5
+ * display_content_ascii_5(+Content, +RowNumber, +ColumnNumber)
+ * Displays the fifth line of a content row.
+ * Decides wheter to draw a frog, a flower of empty space, according to the Content.
+ *
+ * Content -> Content to print.
+ * RowNumber -> Row of the current cell.
+ * ColumnNumber -> Column of the current cell.
+ */
+display_content_ascii_5(Content, _, _) :-
+    Content \= empty,
+    display_frog_ascii_5(Content).
+
+display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
+    Content = empty,
+    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    display_flower_ascii_5(_).
+
+display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
+    Content = empty,
+    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    display_empty_line(_).
+
+/**
  * Display Frog Ascii 1
- * display_frog_ascii_1(+Count)
+ * display_frog_ascii_1(+Frog)
  * Displays the first line used in the ascii art of the frog.
  * The display color is given by the term frog_color.
  *
- * Frog -> Color of the frog to print if there is a frog. Otherwise, empty. 
+ * Frog -> Color of the frog to print.
  */
 display_frog_ascii_1(Frog) :-
-    Frog = empty,
-    write('               ').
-
-display_frog_ascii_1(Frog) :-
-    Frog \= empty,
     frog_color(Frog, Color),
-    ansi_format([fg(Color)], '~w', ['    (\')=(\')    ']).
+    ansi_format([fg(Color), bg(white)], '~w', ['    ']),
+    ansi_format([fg(black), bg(Color)], '~w', ['(\')=(\')']),
+    ansi_format([fg(Color), bg(white)], '~w', ['    ']).
     
 /**
  * Display Frog Ascii 2
- * display_frog_ascii_2(+Count)
+ * display_frog_ascii_2(+Frog)
  * Displays the second line used in the ascii art of the frog.
  * The display color is given by the term frog_color.
  *
- * Frog -> Color of the frog to print if there is a frog. Otherwise, empty. 
+ * Frog -> Color of the frog to print.
  */
-display_frog_ascii_2(Frog) :-
-    Frog = empty,
-    write('               ').
-
-display_frog_ascii_2(Frog) :-
-    Frog \= empty,
+ display_frog_ascii_2(Frog) :-
     frog_color(Frog, Color),
-    ansi_format([fg(Color)], '~w', ['  __(  "  )__  ']).
+    ansi_format([fg(black), bg(white)], '~w', ['  __']),
+    ansi_format([fg(black), bg(Color)], '~w', ['(  "  )']),
+    ansi_format([fg(Color), bg(white)], '~w', ['__  ']).
     
 /**
  * Display Frog Ascii 3
- * display_frog_ascii_3(+Count)
+ * display_frog_ascii_3(+Frog)
  * Displays the third line used in the ascii art of the frog.
  * The display color is given by the term frog_color.
  *
- * Frog -> Color of the frog to print if there is a frog. Otherwise, empty. 
+ * Frog -> Color of the frog to print.
  */
 display_frog_ascii_3(Frog) :-
-    Frog = empty,
-    write('               ').
-
-display_frog_ascii_3(Frog) :-
-    Frog \= empty,
     frog_color(Frog, Color),
-    ansi_format([fg(Color)], '~w', [' / _/\'---\'\\_ \\ ']).
+    ansi_format([fg(Color), bg(white)], '~w', [' ']),
+    ansi_format([fg(black), bg(Color)], '~w', ['/ _/\'---\'\\_ \\']),
+    ansi_format([fg(Color), bg(white)], '~w', [' ']).
     
 /**
  * Display Frog Ascii 4
- * display_frog_ascii_4(+Count)
+ * display_frog_ascii_4(+Frog)
  * Displays the fourth line used in the ascii art of the frog.
  * The display color is given by the term frog_color.
  *
- * Frog -> Color of the frog to print if there is a frog. Otherwise, empty. 
+ * Frog -> Color of the frog to print.
  */
 display_frog_ascii_4(Frog) :-
-    Frog = empty,
-    write('               ').
-
-display_frog_ascii_4(Frog) :-
-    Frog \= empty,
     frog_color(Frog, Color),
-    ansi_format([fg(Color)], '~w', ['_\\\\ \\\\   // //_']).
+    ansi_format([fg(black), bg(white)], '~w', ['_']),
+    ansi_format([fg(black), bg(Color)], '~w', ['\\\\ \\\\   // //']),
+    ansi_format([fg(black), bg(white)], '~w', ['_']).
     
 /**
  * Display Frog Ascii 5
- * display_frog_ascii_5(+Count)
+ * display_frog_ascii_5(+Frog)
  * Displays the fifth line used in the ascii art of the frog.
  * The display color is given by the term frog_color.
  *
- * Frog -> Color of the frog to print if there is a frog. Otherwise, empty. 
+ * Frog -> Color of the frog to print.
  */
 display_frog_ascii_5(Frog) :-
-    Frog = empty,
+    frog_color(Frog, Color),
+    ansi_format([fg(black), bg(Color)], '~w', ['>__)/_\\-/_\\(__<']).
+
+/**
+ * Display Empty Line
+ * display_empty_line(_)
+ * Displays an empty line. Used to fill empty cells that are not outer cells of the board.
+ */
+display_empty_line(_) :-
     write('               ').
 
-display_frog_ascii_5(Frog) :-
-    Frog \= empty,
-    frog_color(Frog, Color),
-    ansi_format([fg(Color)], '~w', ['>__)/_\\-/_\\(__<']).
+/**
+ * Display Flower Ascii 1
+ * display_flower_ascii_1(_)
+ * Displays the first line of a flower.
+ */
+display_flower_ascii_1(_) :-
+    ansi_format([fg(green), bg(blue)], '~w', ['    ']),
+    ansi_format([fg(black), bg(green)], '~w', ['/\\']),
+    ansi_format([fg(black), bg(blue)], '~w', ['   ']),
+    ansi_format([fg(black), bg(green)], '~w', ['/\\']),
+    ansi_format([fg(green), bg(blue)], '~w', ['    ']).
+
+/**
+ * Display Flower Ascii 2
+ * display_flower_ascii_2(_)
+ * Displays the second line of a flower.
+ */
+display_flower_ascii_2(_) :-
+    ansi_format([fg(green), bg(blue)], '~w', ['   ']),
+    ansi_format([fg(black), bg(green)], '~w', ['/  \\']),
+    ansi_format([fg(black), bg(blue)], '~w', [' ']),
+    ansi_format([fg(black), bg(green)], '~w', ['/  \\']),
+    ansi_format([fg(green), bg(blue)], '~w', ['   ']).
+
+/**
+ * Display Flower Ascii 3
+ * display_flower_ascii_3(_)
+ * Displays the third line of a flower.
+ */
+display_flower_ascii_3(_) :-
+    ansi_format([fg(green), bg(blue)], '~w', ['  ']),
+    ansi_format([fg(black), bg(green)], '~w', ['|    v    |']),
+    ansi_format([fg(green), bg(blue)], '~w', ['  ']).
+
+/**
+ * Display Flower Ascii 4
+ * display_flower_ascii_4(_)
+ * Displays the fourth line of a flower.
+ */
+display_flower_ascii_4(_) :-
+    ansi_format([fg(green), bg(blue)], '~w', ['  ']),
+    ansi_format([fg(black), bg(green)], '~w', ['|         |']),
+    ansi_format([fg(green), bg(blue)], '~w', ['  ']).
+
+/**
+ * Display Flower Ascii 5
+ * display_flower_ascii_5(_)
+ * Displays the fifth line of a flower.
+ */
+display_flower_ascii_5(_) :-
+    ansi_format([fg(green), bg(blue)], '~w', ['   ']),
+    ansi_format([fg(black), bg(green)], '~w', ['\\_______/']),
+    ansi_format([fg(green), bg(blue)], '~w', ['   ']).
