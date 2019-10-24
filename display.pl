@@ -26,33 +26,35 @@ frog_color(yellow, yellow).
 
 /**
  * Display Game 
- * display_game(+Board, +Player)
+ * display_game(+Board, +Player, +JumpN)
  * Displays the current state of the game, that is, the board and the player turn.
  *
  * Board -> Matrix that represents the current board.
  * Player -> Number of the player to make the next move.
+ * JumpN -> Number of the jump in the current turn
  */
-display_game(Board, Player) :-
+display_game(Board, Player, JumpN) :-
+    JumpN >= 1,
     player_frog(Player, _), nl,
     display_board(Board), nl,
-    display_turn(Player).
+    display_turn(Player, JumpN).
 
 /**
  * Display Turn
- * display_turn(+Player)
+ * display_turn(+Player, +JumpN)
  * Displays an indicator of the next player to make a move.
  *
  * Player -> The player number that will play the next turn.
+ * JumpN -> Number of the jump in the current turn
  */
-display_turn(Player) :-
+display_turn(Player, JumpN) :-
+    JumpN >= 1,
     player_frog(Player, Frog),
     frog_color(Frog, Color),
 
-    write('                     '), display_frog_ascii_1(Frog), nl,
-    write('  /===============\\  '), display_frog_ascii_2(Frog), nl,
-    write('  | '), ansi_format([fg(black), bg(Color)], 'Player ~d Turn', [Player]), write(' |  '), display_frog_ascii_3(Frog), nl,
-    write('  \\===============/  '), display_frog_ascii_4(Frog), nl,
-    write('                     '), display_frog_ascii_5(Frog), nl, nl.
+    write('  /===============\\  '), nl,
+    write('  | '), ansi_format([fg(black), bg(Color)], 'Player ~d Turn', [Player]), write(' |  Jump number '), write(JumpN), nl,
+    write('  \\===============/  '), nl, nl.
 
 /**
  * Display Board
@@ -384,9 +386,15 @@ display_div_line(Count) :-
  * RowNumber -> Row of the current cell.
  * ColumnNumber -> Column of the current cell.
  */
-display_content_ascii_1(Content, _, _) :-
+display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
     Content \= empty,
-    display_frog_ascii_1(Content).
+    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    display_frog_ascii_1(Content, blue).
+
+display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
+    Content \= empty,
+    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    display_frog_ascii_1(Content, white).
 
 display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
     Content = empty,
@@ -408,9 +416,15 @@ display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
  * RowNumber -> Row of the current cell.
  * ColumnNumber -> Column of the current cell.
  */
-display_content_ascii_2(Content, _, _) :-
+display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
     Content \= empty,
-    display_frog_ascii_2(Content).
+    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    display_frog_ascii_2(Content, blue).
+
+display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
+    Content \= empty,
+    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    display_frog_ascii_2(Content, white).
 
 display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
     Content = empty,
@@ -432,9 +446,15 @@ display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
  * RowNumber -> Row of the current cell.
  * ColumnNumber -> Column of the current cell.
  */
-display_content_ascii_3(Content, _, _) :-
+display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
     Content \= empty,
-    display_frog_ascii_3(Content).
+    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    display_frog_ascii_3(Content, blue).
+    
+display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
+    Content \= empty,
+    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    display_frog_ascii_3(Content, white).
 
 display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
     Content = empty,
@@ -456,9 +476,15 @@ display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
  * RowNumber -> Row of the current cell.
  * ColumnNumber -> Column of the current cell.
  */
-display_content_ascii_4(Content, _, _) :-
+display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
     Content \= empty,
-    display_frog_ascii_4(Content).
+    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    display_frog_ascii_4(Content, blue).
+    
+display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
+    Content \= empty,
+    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    display_frog_ascii_4(Content, white).
 
 display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
     Content = empty,
@@ -480,9 +506,15 @@ display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
  * RowNumber -> Row of the current cell.
  * ColumnNumber -> Column of the current cell.
  */
-display_content_ascii_5(Content, _, _) :-
+display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
     Content \= empty,
-    display_frog_ascii_5(Content).
+    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    display_frog_ascii_5(Content, blue).
+    
+display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
+    Content \= empty,
+    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    display_frog_ascii_5(Content, white).
 
 display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
     Content = empty,
@@ -496,69 +528,74 @@ display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
 
 /**
  * Display Frog Ascii 1
- * display_frog_ascii_1(+Frog)
+ * display_frog_ascii_1(+Frog, +BGColor)
  * Displays the first line used in the ascii art of the frog.
  * The display color is given by the term frog_color.
  *
  * Frog -> Color of the frog to print.
+ * BGColor -> Color of the background.
  */
-display_frog_ascii_1(Frog) :-
+display_frog_ascii_1(Frog, BGColor) :-
     frog_color(Frog, Color),
-    ansi_format([fg(Color), bg(white)], '~w', ['    ']),
+    ansi_format([fg(Color), bg(BGColor)], '~w', ['    ']),
     ansi_format([fg(black), bg(Color)], '~w', ['(\')=(\')']),
-    ansi_format([fg(Color), bg(white)], '~w', ['    ']).
+    ansi_format([fg(Color), bg(BGColor)], '~w', ['    ']).
     
 /**
  * Display Frog Ascii 2
- * display_frog_ascii_2(+Frog)
+ * display_frog_ascii_2(+Frog, +BGColor)
  * Displays the second line used in the ascii art of the frog.
  * The display color is given by the term frog_color.
  *
  * Frog -> Color of the frog to print.
+ * BGColor -> Color of the background.
  */
- display_frog_ascii_2(Frog) :-
+ display_frog_ascii_2(Frog, BGColor) :-
     frog_color(Frog, Color),
-    ansi_format([fg(black), bg(white)], '~w', ['  __']),
+    ansi_format([fg(black), bg(BGColor)], '~w', ['  __']),
     ansi_format([fg(black), bg(Color)], '~w', ['(  "  )']),
-    ansi_format([fg(Color), bg(white)], '~w', ['__  ']).
+    ansi_format([fg(Color), bg(BGColor)], '~w', ['__  ']).
     
 /**
  * Display Frog Ascii 3
- * display_frog_ascii_3(+Frog)
+ * display_frog_ascii_3(+Frog, +BGColor)
  * Displays the third line used in the ascii art of the frog.
  * The display color is given by the term frog_color.
  *
  * Frog -> Color of the frog to print.
+ * BGColor -> Color of the background.
  */
-display_frog_ascii_3(Frog) :-
+display_frog_ascii_3(Frog, BGColor) :-
     frog_color(Frog, Color),
-    ansi_format([fg(Color), bg(white)], '~w', [' ']),
+    ansi_format([fg(Color), bg(BGColor)], '~w', [' ']),
     ansi_format([fg(black), bg(Color)], '~w', ['/ _/\'---\'\\_ \\']),
-    ansi_format([fg(Color), bg(white)], '~w', [' ']).
+    ansi_format([fg(Color), bg(BGColor)], '~w', [' ']).
     
 /**
  * Display Frog Ascii 4
- * display_frog_ascii_4(+Frog)
+ * display_frog_ascii_4(+Frog, +BGColor)
  * Displays the fourth line used in the ascii art of the frog.
  * The display color is given by the term frog_color.
  *
  * Frog -> Color of the frog to print.
+ * BGColor -> Color of the background.
  */
-display_frog_ascii_4(Frog) :-
+display_frog_ascii_4(Frog, BGColor) :-
     frog_color(Frog, Color),
-    ansi_format([fg(black), bg(white)], '~w', ['_']),
+    ansi_format([fg(black), bg(BGColor)], '~w', ['_']),
     ansi_format([fg(black), bg(Color)], '~w', ['\\\\ \\\\   // //']),
-    ansi_format([fg(black), bg(white)], '~w', ['_']).
+    ansi_format([fg(black), bg(BGColor)], '~w', ['_']).
     
 /**
  * Display Frog Ascii 5
- * display_frog_ascii_5(+Frog)
+ * display_frog_ascii_5(+Frog, +BGColor)
  * Displays the fifth line used in the ascii art of the frog.
  * The display color is given by the term frog_color.
  *
  * Frog -> Color of the frog to print.
+ * BGColor -> Color of the background.
  */
-display_frog_ascii_5(Frog) :-
+display_frog_ascii_5(Frog, _) :-
     frog_color(Frog, Color),
     ansi_format([fg(black), bg(Color)], '~w', ['>__)/_\\-/_\\(__<']).
 

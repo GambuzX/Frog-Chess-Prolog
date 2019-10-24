@@ -44,6 +44,20 @@ intermediateBoard([
 ]).
 
 /*
+    The game is still going on, any player can jump.
+*/
+frogOutsideRange([
+    [empty, empty, empty, empty, empty, empty, empty, empty],
+    [empty, blue, blue, empty, empty, empty, blue, empty],
+    [empty, blue, blue, empty, yellow, empty, empty, empty],
+    [empty, blue, empty, empty, yellow, yellow, yellow, empty],
+    [blue, empty, blue, empty, blue, empty, empty, empty],
+    [empty, yellow, blue, empty, empty, empty, blue, empty],
+    [empty, empty, yellow, empty, yellow, blue, yellow, empty],
+    [empty, empty, empty, empty, empty, empty, empty, empty]
+]).
+
+/*
     The only yellow frog in the bottom-right corner is isolated.
     blue player wins.
 */
