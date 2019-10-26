@@ -1,4 +1,3 @@
-:- include('game_state.pl'). % file with various game states defined
 :- include(library(ansi_term)). % library used to display colored output
 
 /** 
