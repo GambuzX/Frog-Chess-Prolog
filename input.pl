@@ -105,6 +105,30 @@ readRow(Row) :-
     Code >= 97,
     Code =< 104.
 
+    
+
+/**
+ * Row to index
+ * rowToIndex(+Row, -Index)
+ * Returns index of given Row value.
+ * 
+ * Row -> Value representing the row, from a to h
+ * Index -> Variable to return Index
+ */
+rowToIndex(Row, Index) :- 
+    char_code(Row, Code),
+    Index is Code-97.
+
+/**
+ * Column to index
+ * colToIndex(+Col, -Index)
+ * Returns index of given Col value.
+ * 
+ * Col -> Value representing the column, from 1 to 8
+ * Index -> Variable to return Index
+ */
+colToIndex(Col, Index) :- Index is Col-1.
+
 /**
  * Read position
  * readPosition(-Row, -Col)
@@ -117,10 +141,12 @@ readRow(Row) :-
  */
 readPosition(Row, Col) :-
     write('Position: ('),
-    readRow(Row),
-    write(Row),
+    readRow(RowInp),
+    write(RowInp),
     put_char(','),
-    readCol(Col),
-    write(Col),
+    readCol(ColInp),
+    write(ColInp),
     put_char(')'),
-    nl.
+    nl,
+    rowToIndex(RowInp, Row),
+    colToIndex(ColInp, Col).
