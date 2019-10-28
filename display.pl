@@ -1,6 +1,17 @@
 :- include(library(ansi_term)). % library used to display colored output
 
 /**
+ * Player Color
+ * player_color(+Player, -DisplayColor)
+ * Associates a display color to each player.
+ * 
+ * Player -> Player number.
+ * DisplayColor -> Color used to display the specified player. 
+ */
+player_color(1, cyan).
+player_color(2, yellow).
+
+/**
  * Frog Color
  * frog_color(+PlayerFrogColor, -DisplayFrogColor)
  * Associates a display color to each frog color.
@@ -23,7 +34,7 @@ frog_color(yellow, yellow).
  */
 display_game(Board, Player, JumpN) :-
     JumpN >= 1,
-    player_frog(Player, _), nl,
+    playerFrog(Player, _), nl,
     display_board(Board), nl,
     display_turn(Player, JumpN).
 
@@ -37,8 +48,7 @@ display_game(Board, Player, JumpN) :-
  */
 display_turn(Player, JumpN) :-
     JumpN >= 1,
-    player_frog(Player, Frog),
-    frog_color(Frog, Color),
+    player_color(Player, Color),
 
     write('  /===============\\  '), nl,
     write('  | '), ansi_format([fg(black), bg(Color)], 'Player ~d Turn', [Player]), write(' |  Jump number '), write(JumpN), nl,

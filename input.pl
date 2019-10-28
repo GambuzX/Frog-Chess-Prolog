@@ -131,16 +131,16 @@ colToIndex(Col, Index) :- Index is Col-1.
 
 /**
  * Read position
- * readPosition(-Row, -Col)
+ * readPosition(+PrefixText, -Position)
  * Reads a position from the user, that is, a row and a column.
- * Writes text to help the user understand what is being asked, 
- * in the format: Position: (Row,Col)
+ * Prefixes a message specified by PrefixText.
  * 
- * Row -> Variable to return read row.
- * Col -> Variable to return read col.
+ * PrefixText -> message to be prefixed.
+ * Position -> Variable to return read position.
  */
-readPosition(Row, Col) :-
-    write('Position: ('),
+readPosition(PrefixText, [Row, Col]) :-
+    write(PrefixText),
+    write('('),
     readRow(RowInp),
     write(RowInp),
     put_char(','),
