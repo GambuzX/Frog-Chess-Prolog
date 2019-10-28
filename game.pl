@@ -24,6 +24,15 @@ validPosition([Row, Column]) :-
     Row >= 0, Row =< 7,
     Column >= 0, Column =< 7.
 
+/**
+ * Display a error message
+ * errorMsg(+Msg)
+ * Displays a error message on screen and fails.
+ *
+ * Msg -> Message to be displayed
+ */
+errorMsg(Msg) :-
+    nl, write(Msg), nl, nl, fail.
 
 /**
  * Initialize board
@@ -33,7 +42,7 @@ validPosition([Row, Column]) :-
  * B -> Variable to return created board.
  */
 initBoard(B) :-
-    initialBoard(B).
+    intermediateBoard(B).
 
 
 /**
@@ -146,58 +155,56 @@ setPositionHelper([CurrRow | Rest], [TargetRow, TargetCol], NewValue, RowI, [Cur
 setPosition(Board, Pos, NewValue, NewBoard) :-
     setPositionHelper(Board, Pos, NewValue, 0, NewBoard).
 
+
+
 /**
  * Valid jump
- * validJump(+StartPosition, +EndPosition)
- * Verifies if a jump from StartPosition to EndPosition is valid.
+ * validJump(+StartPosition, -EndPosition)
+ * Generates all valid jumping positions from StartPosition.
  * Jumps can be horizontal, vertical or diagonal, 2 positions from the starting one.
  * 
  * StartPosition -> Starting position.
  * EndPosition -> Ending position.
  */
-validJump([SRow, SCol], [ERow, ECol]) :- 
-    SRow = ERow,
-    Comp is ECol-2,
-    SCol = Comp.
-
-validJump([SRow, SCol], [ERow, ECol]) :- 
-    SRow = ERow,
-    Comp is ECol+2,
-    SCol = Comp.
-
-validJump([SRow, SCol], [ERow, ECol]) :- 
-    SCol = ECol,
-    Comp is ERow-2,
-    SRow = Comp.
-
-validJump([SRow, SCol], [ERow, ECol]) :- 
-    SCol = ECol,
-    Comp is ERow+2,
-    SRow = Comp.
-
 validJump([SRow, SCol], [ERow, ECol]) :-
-    RowComp is ERow-2,
-    ColComp is ECol-2,
-    SRow = RowComp,
-    SCol = ColComp.
-
+    ERow is SRow,
+    ECol is SCol+2,
+    validPosition([ERow, ECol]).
+    
 validJump([SRow, SCol], [ERow, ECol]) :-
-    RowComp is ERow-2,
-    ColComp is ECol+2,
-    SRow = RowComp,
-    SCol = ColComp.
-
+    ERow is SRow,
+    ECol is SCol-2,
+    validPosition([ERow, ECol]).
+    
 validJump([SRow, SCol], [ERow, ECol]) :-
-    RowComp is ERow+2,
-    ColComp is ECol-2,
-    SRow = RowComp,
-    SCol = ColComp.
-
+    ERow is SRow+2,
+    ECol is SCol,
+    validPosition([ERow, ECol]).
+    
 validJump([SRow, SCol], [ERow, ECol]) :-
-    RowComp is ERow+2,
-    ColComp is ECol+2,
-    SRow = RowComp,
-    SCol = ColComp.
+    ERow is SRow-2,
+    ECol is SCol,
+    validPosition([ERow, ECol]).
+    
+validJump([SRow, SCol], [ERow, ECol]) :-
+    ERow is SRow-2,
+    ECol is SCol-2,
+    validPosition([ERow, ECol]).
+    
+validJump([SRow, SCol], [ERow, ECol]) :-
+    ERow is SRow+2,
+    ECol is SCol-2,
+    validPosition([ERow, ECol]).
+    
+validJump([SRow, SCol], [ERow, ECol]) :-
+    ERow is SRow-2,
+    ECol is SCol+2,
+    validPosition([ERow, ECol]).
+    
+validJump([SRow, SCol], [ERow, ECol]) :-
+    ERow is SRow+2,
+    ECol is SCol+2,
+    validPosition([ERow, ECol]).
 
 
 /**
@@ -212,6 +219,29 @@ validJump([SRow, SCol], [ERow, ECol]) :-
 middlePosition([SRow,SCol], [ERow,ECol], [MRow,MCol]) :-
     MRow is (SRow+ERow)/2,
     MCol is (SCol+ECol)/2.
+
+
+/**
+ * Frog can jump
+ * frogCanJump(+Board, +FrogPosition)
+ * Checks if a frog in a given position can jump in any direction.
+ * 
+ * Board -> Game board.
+ * FrogPosition -> Frog position.
+ */
+frogCanJump(Board, FrogPos) :-
+    % look through all valid jumps
+    validJump(FrogPos, Dest),
+
+    % check if dest is empty
+    getPosition(Board, Dest, empty),
+
+    % determine middle position
+    middlePosition(FrogPos, Dest, MidPos),
+
+    % check if there is a frog in middle position
+    getPosition(Board, MidPos, MidFrog),
+    playerFrog(_, MidFrog).
 
 /**
  * Jump
@@ -253,31 +283,42 @@ jump(InBoard, StartPos, MidPos, EndPos, Frog, OutBoard) :-
  */
 readJumpPositions(Board, Player, InitPos, MidPos, EndPos, Frog) :-
     % starting position
-    readPosition('Frog to jump? ', InitPos),
-    getPosition(Board, InitPos, Frog), 
-    playerFrog(Player, Frog),
+    repeat,
+        (
+            readPosition('Frog to jump? ', InitPos), 
+            getPosition(Board, InitPos, Frog),
+            playerFrog(Player, Frog),
+            frogCanJump(Board, InitPos),
+            !;
+            errorMsg('Invalid start position!')
+        ),
 
     % end position
-    readPosition('Position to jump? ', EndPos),
-    getPosition(Board, EndPos, empty),
-    
-    % check if jump is valid
-    validJump(InitPos, EndPos),
+    (            
+        readPosition('Position to jump? ', EndPos),
+        getPosition(Board, EndPos, empty),
+        validJump(InitPos, ValidPos),
+        ValidPos = EndPos,
+        !;
+        errorMsg('Invalid jump destination')
+    ),
 
     % check middle position for a frog
-    middlePosition(InitPos, EndPos, MidPos),
-    getPosition(Board, MidPos, MidFrog),
-    playerFrog(_, MidFrog).
+    (
+        middlePosition(InitPos, EndPos, MidPos),
+        getPosition(Board, MidPos, MidFrog),
+        playerFrog(_, MidFrog),
+        !;
+        errorMsg('Frogs must jump over other frogs!')    
+    ).
 
 
 
 
 playTurn(InBoard, Player, OutBoard) :-
-
     % read jump positions until valid
     repeat,
-        nl, readJumpPositions(InBoard, Player, InitPos, MidPos, EndPos, Frog),
-        !,
+        readJumpPositions(InBoard, Player, InitPos, MidPos, EndPos, Frog), !,
 
     % perform the jump
     jump(InBoard, InitPos, MidPos, EndPos, Frog, OutBoard).
