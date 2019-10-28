@@ -1,16 +1,5 @@
 :- include(library(ansi_term)). % library used to display colored output
 
-/** 
- * Player Frog
- * player_frog(+Number, -PlayerFrogColor)
- * Associates a frog color to each player number.
- *
- * Number -> Number of the player. Since for now we only consider 2 players, it is either 1 or 2.
- * PlayerFrogColor -> Returns the frog color associated with the player number.
- */
-player_frog(1, blue).
-player_frog(2, yellow).
-
 /**
  * Frog Color
  * frog_color(+PlayerFrogColor, -DisplayFrogColor)

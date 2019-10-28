@@ -2,6 +2,29 @@
 :- include('display.pl').
 :- include('input.pl').
 
+/** 
+ * Player Frog
+ * playerFrog(+Number, -PlayerFrogColor)
+ * Associates a frog color to each player number.
+ *
+ * Number -> Number of the player. Since for now we only consider 2 players, it is either 1 or 2.
+ * PlayerFrogColor -> Returns the frog color associated with the player number.
+ */
+playerFrog(1, blue).
+playerFrog(2, yellow).
+
+/** 
+ * Valid position
+ * validPosition(+Position)
+ * Checks if a given position is valid, that is, inside a 8x8 0-indexed board
+ *
+ * Position -> Position to check, in the format [Row, Column].
+ */
+validPosition([Row, Column]) :-
+    Row >= 0, Row =< 7,
+    Column >= 0, Column =< 7.
+
+
 /**
  * Initialize board
  * initBoard(-Board)
@@ -47,15 +70,14 @@ getValueInRow([_ | Rest], Col, Value) :-
 
 /**
  * Get position
- * getPosition(+Board, +Row, +Col, -Value)
- * Returns the value in position (Row, Col) in the given board.
+ * getPosition(+Board, +Position, -Value)
+ * Returns the value in position [Row, Col] in the given board.
  * 
  * Board -> List of lists representing the board.
- * Row -> Target row.
- * Col -> Target column.
+ * Position -> Position in the board, containing the values [Row, Col].
  * Value -> Variable to return target value.
  */
-getPosition(Board, Row, Col, Value) :-
+getPosition(Board, [Row, Col], Value) :-
     getTargetRow(Board, Row, TargetRow),
     getValueInRow(TargetRow, Col, Value).
 
@@ -123,10 +145,103 @@ setPositionHelper([CurrRow | Rest], TargetRow, TargetCol, NewValue, RowI, [CurrR
  * NewValue -> New value to be added.
  * NewBoard -> Returns the modified board.
  */
-setPosition(Board, Row, Col, NewValue, NewBoard) :-
+setPosition(Board, [Row, Col], NewValue, NewBoard) :-
     setPositionHelper(Board, Row, Col, NewValue, 0, NewBoard).
 
-play_game :-
+/**
+ * Valid jump
+ * validJump(+StartRow, +StartColumn, +EndRow, +EndColumn)
+ * Verifies if a jump from (StartRow, StartColumn) to (EndRow, EndColumn) is valid.
+ * Jumps can be horizontal, vertical or diagonal, 2 positions from the starting one.
+ * 
+ * StartRow -> Starting row.
+ * StartColumn -> Starting column.
+ * EndRow -> Ending row.
+ * EndColumn -> Ending column.
+ */
+validJump(SRow, SCol, ERow, ECol) :- 
+    SRow = ERow,
+    Comp is ECol-2,
+    SCol = Comp.
+
+validJump(SRow, SCol, ERow, ECol) :- 
+    SRow = ERow,
+    Comp is ECol+2,
+    SCol = Comp.
+
+validJump(SRow, SCol, ERow, ECol) :- 
+    SCol = ECol,
+    Comp is ERow-2,
+    SRow = Comp.
+
+validJump(SRow, SCol, ERow, ECol) :- 
+    SCol = ECol,
+    Comp is ERow+2,
+    SRow = Comp.
+
+validJump(SRow, SCol, ERow, ECol) :-
+    RowComp is ERow-2,
+    ColComp is ECol-2,
+    SRow = RowComp,
+    SCol = ColComp.
+
+validJump(SRow, SCol, ERow, ECol) :-
+    RowComp is ERow-2,
+    ColComp is ECol+2,
+    SRow = RowComp,
+    SCol = ColComp.
+
+validJump(SRow, SCol, ERow, ECol) :-
+    RowComp is ERow+2,
+    ColComp is ECol-2,
+    SRow = RowComp,
+    SCol = ColComp.
+
+validJump(SRow, SCol, ERow, ECol) :-
+    RowComp is ERow+2,
+    ColComp is ECol+2,
+    SRow = RowComp,
+    SCol = ColComp.
+
+
+/**
+ * Jump
+ * jump(+InputBoard, +Player, +StartRow, +StartColumn, +EndRow, +EndColumn, -OutputBoard)
+ * Jumps a frog from starting position to end position.
+ * Verifies if the jump is valid.
+ * 
+ * InputBoard -> Initial board before jumping.
+ * Player -> Player responsible for the jump.
+ * StartRow -> Starting row.
+ * StartColumn -> Starting column.
+ * EndRow -> Ending row.
+ * EndColumn -> Ending column.
+ * OutputBoard -> Modified board after jumping.
+ */
+jump(InBoard, Player, SRow, SCol, ERow, ECol, OutBoard) :-
+    % check if positions are inside the board
+    SRow >= 0, SRow =< 7,
+    ERow >= 0, ERow =< 7,
+
+    % check if jump is valid
+    validJump(SRow, SCol, ERow, ECol),
+
+    % check if there is a frog of current player in start position
+    getPosition(InBoard, SRow, SCol, Frog), 
+    playerFrog(Player, Frog).
+
+    % check middle position for a frog
+
+    % set middle position empty
+
+    % set initial position empty
+
+    % set end position to current frog
+
+
+
+
+playGame :-
     initBoard(B),
     display_game(B, 1, 1),
     readPosition(Row, Col),
