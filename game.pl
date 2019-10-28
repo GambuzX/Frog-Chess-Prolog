@@ -200,21 +200,30 @@ validJump([SRow, SCol], [ERow, ECol]) :-
     SCol = ColComp.
 
 
-
+/**
+ * Middle Position
+ * middlePosition(+StartPos, +EndPosition, -MidPosition )
+ * Determines the position between Start and End.
+ * 
+ * StartPosition -> Starting position.
+ * EndPosition -> Ending position.
+ * MidPosition -> Position between Start and End.
+ */
 middlePosition([SRow,SCol], [ERow,ECol], [MRow,MCol]) :-
     MRow is (SRow+ERow)/2,
     MCol is (SCol+ECol)/2.
 
 /**
  * Jump
- * jump(+InputBoard, +Player, +StartPosition, +EndPosition, -OutputBoard)
- * Jumps a frog from starting position to end position.
- * Verifies if the jump is valid.
+ * jump(+InputBoard, +StartPos, +MidPosition, +EndPosition, +Frog, -OutputBoard)
+ * Jumps a frog from starting position to end position, updating all required cells.
+ * Does not perform any validation.
  * 
  * InputBoard -> Initial board before jumping.
- * Player -> Player responsible for the jump.
  * StartPosition -> Starting position.
+ * MidPosition -> Position between Start and End.
  * EndPosition -> Ending position.
+ * Frog -> Frog that is jumping.
  * OutputBoard -> Modified board after jumping.
  */
 jump(InBoard, StartPos, MidPos, EndPos, Frog, OutBoard) :-
@@ -229,7 +238,19 @@ jump(InBoard, StartPos, MidPos, EndPos, Frog, OutBoard) :-
     setPosition(NewBoard2, EndPos, Frog, OutBoard).
 
 
-
+/**
+ * Read jump positions
+ * readJumpPositions(+Board, +Player, -StartPos, -MidPosition, -EndPosition, -Frog)
+ * Asks the user for input regarding the positions for the frog jump.
+ * Asks for start position and end position, until a valid option is provided.
+ * 
+ * Board -> Game board.
+ * Player -> Player of current turn.
+ * StartPosition -> Starting position.
+ * MidPosition -> Position between Start and End.
+ * EndPosition -> Ending position.
+ * Frog -> Frog that is jumping.
+ */
 readJumpPositions(Board, Player, InitPos, MidPos, EndPos, Frog) :-
     % starting position
     readPosition('Frog to jump? ', InitPos),
