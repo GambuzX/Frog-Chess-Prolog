@@ -42,7 +42,7 @@ errorMsg(Msg) :-
  * B -> Variable to return created board.
  */
 initBoard(B) :-
-    intermediateBoard(B).
+    test(B).
 
 
 /**
@@ -371,9 +371,65 @@ verifyWinCondition(Board, 1, 1) :- \+findJumpableFrog(Board, 1, 0), !.
 verifyWinCondition(Board, 2, 2) :- \+findJumpableFrog(Board, 2, 0), !.
 
 
+/**
+ * Remove row outer frogs
+ * removeRowOuterFrogs(+CurrRow, +Positon, -NewRow)
+ * Iterates over the columns of a row, emptying the positions on the board edges.
+ * 
+ * CurrRow -> Initial row.
+ * Positon -> Current position.
+ * NewRow -> Modified row.
+ */
+removeRowOuterFrogs(_, [_, 8], []) :- !.
+
+removeRowOuterFrogs([_ | Rest], [0, ColI], [empty | NewRow]) :-
+    NextCol is ColI+1,
+    removeRowOuterFrogs(Rest, [0, NextCol], NewRow).
+    
+removeRowOuterFrogs([_ | Rest], [7, ColI], [empty | NewRow]) :-
+    NextCol is ColI+1,
+    removeRowOuterFrogs(Rest, [7, NextCol], NewRow).
+
+removeRowOuterFrogs([_ | Rest], [RowI, 0], [empty | NewRow]) :-
+    removeRowOuterFrogs(Rest, [RowI, 1], NewRow).
+
+removeRowOuterFrogs([_ | Rest], [RowI, 7], [empty | NewRow]) :-
+    removeRowOuterFrogs(Rest, [RowI, 8], NewRow).
+
+removeRowOuterFrogs([CurrVal | Rest], [RowI, ColI], [CurrVal | NewRow]) :-
+    RowI > 0, RowI < 7,
+    ColI > 0, ColI < 7,
+    NextCol is ColI+1,
+    removeRowOuterFrogs(Rest, [RowI, NextCol], NewRow).
 
 
-removeOuterFrogs(Board, NewBoard).
+/**
+ * Remove outer frogs helper
+ * removeOuterFrogsHelper(+InBoard, +RowI, -OutBoard)
+ * Removes frogs from InBoard in outer positions, iterating over all the rows.
+ * In each iteration, appends a modified row to the OutBoard.
+ * 
+ * InBoard -> Initial board.
+ * RowI -> Current row.
+ * OutBoard -> Modified board.
+ */
+removeOuterFrogsHelper([], 8, []) :- !.
+
+removeOuterFrogsHelper([CurrRow | Rest], RowI, [NewRow | NewBoard]) :-
+    removeRowOuterFrogs(CurrRow, [RowI, 0], NewRow),
+    NextRow is RowI+1,
+    removeOuterFrogsHelper(Rest, NextRow, NewBoard).
+
+/**
+ * Remove outer frogs
+ * removeOuterFrogs(+InBoard, -OutBoard)
+ * Removes frogs from InBoard in outer positions.
+ * 
+ * InBoard -> Initial board.
+ * OutBoard -> Modified board.
+ */
+removeOuterFrogs(InBoard, OutBoard) :-
+    removeOuterFrogsHelper(InBoard, 0, OutBoard).
 
 
 playTurn(InBoard, Player, OutBoard) :-
@@ -388,8 +444,8 @@ playTurn(InBoard, Player, OutBoard) :-
 playGame :-
     initBoard(B),
     display_game(B, 1, 1),
-    verifyWinCondition(B, 1, Loser),
-    write(Loser).
+    removeOuterFrogs(B, NewB),
+    display_game(NewB, 1, 1).
     /*
     playTurn(B, 1, NewB),
     display_game(NewB, 2, 1).
