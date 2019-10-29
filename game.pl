@@ -313,6 +313,67 @@ readJumpPositions(Board, Player, InitPos, MidPos, EndPos, Frog) :-
     ).
 
 
+/**
+ * Find Jumpable Frog In Row
+ * jumpableFrogInRow(+Board, +Player, +Pos)
+ * Checks if any frog in current Row can jump, iterating over columns.
+ * 
+ * Board -> Game board.
+ * Player -> Player in question.
+ * Pos -> Position currently checking.
+ */
+jumpableFrogInRow(_, _, [_,8]) :- !, fail.
+
+jumpableFrogInRow(Board, Player, Pos) :-
+    playerFrog(Player, Frog),
+    getPosition(Board, Pos, Frog),
+    frogCanJump(Board, Pos), !.
+
+jumpableFrogInRow(Board, Player, [RowI, ColI]) :-
+    NextColI is ColI+1,
+    jumpableFrogInRow(Board, Player, [RowI, NextColI]).
+
+
+
+/**
+ * Find Jumpable Frog
+ * findJumpableFrog(+Board, +Player, +RowI)
+ * Searches for a frog of player Player that can jump in the board,
+ * iterating over the rows.
+ * 
+ * Board -> Game board.
+ * Player -> Player in question.
+ * RowI -> Index of current row.
+ */
+findJumpableFrog(_, _, 8) :- !, fail.
+
+findJumpableFrog(Board, Player, RowI) :-
+    jumpableFrogInRow(Board, Player, [RowI, 0]), !.
+
+findJumpableFrog(Board, Player, RowI) :-
+    NextI is RowI+1,
+    findJumpableFrog(Board, Player, NextI).
+
+
+/**
+ * Verify Win Condition
+ * verifyWinCondition(+Board, +LastPlayer, -Loser)
+ * Checks if the game has ended and returns the Loser, given 
+ * that the last player jumping was LastPlayer.
+ * 
+ * Board -> Game board.
+ * LastPlayer -> Player which last played.
+ * Loser -> Player who lost.
+ */
+verifyWinCondition(Board, 1, 2) :- \+findJumpableFrog(Board, 2, 0), !.
+verifyWinCondition(Board, 2, 1) :- \+findJumpableFrog(Board, 1, 0), !.
+verifyWinCondition(Board, 1, 1) :- \+findJumpableFrog(Board, 1, 0), !.
+verifyWinCondition(Board, 2, 2) :- \+findJumpableFrog(Board, 2, 0), !.
+
+
+
+
+removeOuterFrogs(Board, NewBoard).
 
 
 playTurn(InBoard, Player, OutBoard) :-
@@ -327,5 +388,9 @@ playTurn(InBoard, Player, OutBoard) :-
 playGame :-
     initBoard(B),
     display_game(B, 1, 1),
+    verifyWinCondition(B, 1, Loser),
+    write(Loser).
+    /*
     playTurn(B, 1, NewB),
     display_game(NewB, 2, 1).
+    */

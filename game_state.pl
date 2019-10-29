@@ -76,7 +76,7 @@ isolatedPiece([
     blue player has no frogs left and yellow player made the last move.
     yellow player wins.
 */
-noblueFrogsLeft([
+noBlueFrogsLeft([
     [empty, empty, empty, empty, empty, empty, empty, empty],
     [empty, empty, empty, empty, empty, empty, empty, empty],
     [empty, empty, empty, empty, yellow, empty, empty, empty],
