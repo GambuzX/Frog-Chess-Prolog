@@ -119,6 +119,20 @@ rowToIndex(Row, Index) :-
     char_code(Row, Code),
     Index is Code-97.
 
+    
+
+/**
+ * Index to row
+ * indexToRow(+Index, -Row)
+ * Returns row char of given index.
+ * 
+ * Index -> Row index, from 0 to 7.
+ * Row -> Row letter, from 'a' to 'h'.
+ */
+indexToRow(Index, Row) :-
+    Ascii is Index+97,
+    char_code(Row, Ascii).
+
 /**
  * Column to index
  * colToIndex(+Col, -Index)
@@ -128,6 +142,16 @@ rowToIndex(Row, Index) :-
  * Index -> Variable to return Index
  */
 colToIndex(Col, Index) :- Index is Col-1.
+
+/**
+ * Index to column
+ * indexToCol(+Index, -Col)
+ * Returns column of given index.
+ * 
+ * Index -> Column index, from 0 to 7.
+ * Col -> Column value, from 1 to 8.
+ */
+indexToCol(Index, Col) :- Col is Index+1.
 
 /**
  * Read position
@@ -150,3 +174,37 @@ readPosition(PrefixText, [Row, Col]) :-
     nl,
     rowToIndex(RowInp, Row),
     colToIndex(ColInp, Col).
+
+/**
+ * Yes or No Answer
+ * ynAnswer(+Answer)
+ * States that Answer is classified as a yes or no answer.
+ * 
+ * Answer -> User answer, 'y' or 'n'.
+ */
+ynAnswer('y').
+ynAnswer('n').
+
+/**
+ * Ask Yes or No Question
+ * askYNQuestion(+Question, -Answer)
+ * Asks the user a Yes or No question.
+ * 
+ * Question -> Question to be prefixed.
+ * Answer -> User answer, 'y' or 'n'.
+ */
+askYNQuestion(Question, Answer) :-
+    write(Question),
+    readSingleChar(Char),
+    put_char(Char),
+    downcase_atom(Char, Answer),
+    ynAnswer(Answer).
+
+/**
+ * Waits for input
+ * waitForInput
+ * Waits for any user input
+ */
+waitForInput :-
+    nl, write('Press any key to continue...'),
+    get_single_char(_), nl.

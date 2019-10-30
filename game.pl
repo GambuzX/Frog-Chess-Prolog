@@ -13,6 +13,9 @@
 playerFrog(1, blue).
 playerFrog(2, yellow).
 
+nextPlayer(1, 2).
+nextPlayer(2, 1).
+
 /** 
  * Valid position
  * validPosition(+Position)
@@ -42,7 +45,7 @@ errorMsg(Msg) :-
  * B -> Variable to return created board.
  */
 initBoard(B) :-
-    test(B).
+    initialBoard(B).
 
 
 /**
@@ -268,6 +271,27 @@ jump(InBoard, StartPos, MidPos, EndPos, Frog, OutBoard) :-
     setPosition(NewBoard2, EndPos, Frog, OutBoard).
 
 
+readEndPosition(Board, InitPos, MidPos, EndPos) :-
+    
+    (
+        readPosition('Position to jump? ', EndPos),
+        getPosition(Board, EndPos, empty),
+        validJump(InitPos, ValidPos),
+        ValidPos = EndPos, 
+        !;
+
+        errorMsg('Invalid jump destination')
+    ),
+
+    (
+        middlePosition(InitPos, EndPos, MidPos),
+        getPosition(Board, MidPos, MidFrog),
+        playerFrog(_, MidFrog),
+        !;
+        errorMsg('Frogs must jump over other frogs!')    
+    ).
+
+
 /**
  * Read jump positions
  * readJumpPositions(+Board, +Player, -StartPos, -MidPosition, -EndPosition, -Frog)
@@ -294,23 +318,7 @@ readJumpPositions(Board, Player, InitPos, MidPos, EndPos, Frog) :-
         ),
 
     % end position
-    (            
-        readPosition('Position to jump? ', EndPos),
-        getPosition(Board, EndPos, empty),
-        validJump(InitPos, ValidPos),
-        ValidPos = EndPos,
-        !;
-        errorMsg('Invalid jump destination')
-    ),
-
-    % check middle position for a frog
-    (
-        middlePosition(InitPos, EndPos, MidPos),
-        getPosition(Board, MidPos, MidFrog),
-        playerFrog(_, MidFrog),
-        !;
-        errorMsg('Frogs must jump over other frogs!')    
-    ).
+    readEndPosition(Board, InitPos, MidPos, EndPos).
 
 
 /**
@@ -431,6 +439,61 @@ removeOuterFrogsHelper([CurrRow | Rest], RowI, [NewRow | NewBoard]) :-
 removeOuterFrogs(InBoard, OutBoard) :-
     removeOuterFrogsHelper(InBoard, 0, OutBoard).
 
+/**
+ * Continue Jumping
+ * continueJumping(+InBoard, +Player, +FrogPosition, +JumpN, -OutBoard)
+ * Checks if the frog at position FrogPosition can continue jumping, and allows
+ * the user to continue or not jumping with that frog.
+ * Intended to be called after the frog has made 1 jump.
+ *
+ * InBoard -> Initial board.
+ * Player -> Current player turn.
+ * FrogPosition -> Position of frog that jumped.
+ * JumpN -> Jump number in this turn.
+ * OutBoard -> Modified board if continued jumping, initial board otherwise.
+ */
+continueJumping(InBoard, Player, FrogPos, _, OutBoard) :-
+    \+frogCanJump(InBoard, FrogPos),
+
+    write('Current frog can\'t jump again.'), nl,
+    nextPlayer(Player, NextPlayer),
+    write('Player '), write(NextPlayer), write(' turn.'), nl, 
+
+    OutBoard = InBoard,
+    !,
+    waitForInput.
+
+continueJumping(InBoard, Player, [FrogRow, FrogCol], JumpN, OutBoard) :-
+    repeat,
+        nl, askYNQuestion('Jump again? (y/n) : ', Answer), nl,        
+        (
+            Answer = 'y', 
+            % tell user where current frog is
+            indexToRow(FrogRow, Row),
+            indexToCol(FrogCol, Col),
+            nl, displayPosition('Frog at position: ', [Row, Col]),
+
+            % read jump destination
+            readEndPosition(InBoard, [FrogRow, FrogCol], MidPos, EndPos),
+            getPosition(InBoard, [FrogRow, FrogCol], Frog),
+            
+            jump(InBoard, [FrogRow, FrogCol], MidPos, EndPos, Frog, NewBoard),
+            
+            % display updated board
+            display_game(NewBoard, Player, JumpN),
+
+            % keep jumping
+            NextJumpN is JumpN+1,
+            continueJumping(NewBoard, Player, EndPos, NextJumpN, OutBoard),                        
+            !;
+
+            Answer = 'n', 
+            OutBoard = InBoard, 
+            !,
+            nextPlayer(Player, NextPlayer),
+            nl, write('Player '), write(NextPlayer), write(' turn.'), nl, 
+            waitForInput
+        ).
 
 playTurn(InBoard, Player, OutBoard) :-
     % read jump positions until valid
@@ -438,15 +501,16 @@ playTurn(InBoard, Player, OutBoard) :-
         readJumpPositions(InBoard, Player, InitPos, MidPos, EndPos, Frog), !,
 
     % perform the jump
-    jump(InBoard, InitPos, MidPos, EndPos, Frog, OutBoard).
+    jump(InBoard, InitPos, MidPos, EndPos, Frog, NewBoard),
+
+    display_game(NewBoard, Player, 1),
+
+    continueJumping(NewBoard, Player, EndPos, 2, OutBoard).
 
 
 playGame :-
     initBoard(B),
-    display_game(B, 1, 1),
-    removeOuterFrogs(B, NewB),
-    display_game(NewB, 1, 1).
-    /*
+    display_game(B, 1, 0),
     playTurn(B, 1, NewB),
-    display_game(NewB, 2, 1).
-    */
+    display_game(NewB, 2, 0).
+    

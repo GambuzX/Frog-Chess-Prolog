@@ -25,33 +25,33 @@ frog_color(yellow, yellow).
 
 /**
  * Display Game 
- * display_game(+Board, +Player, +JumpN)
+ * display_game(+Board, +Player, +JumpCount)
  * Displays the current state of the game, that is, the board and the player turn.
  *
  * Board -> Matrix that represents the current board.
  * Player -> Number of the player to make the next move.
- * JumpN -> Number of the jump in the current turn
+ * JumpCount -> Number of jumps in the current turn.
  */
-display_game(Board, Player, JumpN) :-
-    JumpN >= 1,
+display_game(Board, Player, JumpCount) :-
+    JumpCount >= 0,
     playerFrog(Player, _), nl,
     display_board(Board), nl,
-    display_turn(Player, JumpN).
+    display_turn(Player, JumpCount).
 
 /**
  * Display Turn
- * display_turn(+Player, +JumpN)
+ * display_turn(+Player, +JumpCount)
  * Displays an indicator of the next player to make a move.
  *
  * Player -> The player number that will play the next turn.
- * JumpN -> Number of the jump in the current turn
+ * JumpCount -> Number of jumps in the current turn.
  */
-display_turn(Player, JumpN) :-
-    JumpN >= 1,
+display_turn(Player, JumpCount) :-
+    JumpCount >= 0,
     player_color(Player, Color),
 
     write('  /===============\\  '), nl,
-    write('  | '), ansi_format([fg(black), bg(Color)], 'Player ~d Turn', [Player]), write(' |  Jump number '), write(JumpN), nl,
+    write('  | '), ansi_format([fg(black), bg(Color)], 'Player ~d Turn', [Player]), write(' |  Jump count: '), write(JumpCount), nl,
     write('  \\===============/  '), nl, nl.
 
 /**
@@ -599,7 +599,7 @@ display_frog_ascii_5(Frog, _) :-
 
 /**
  * Display Empty Line
- * display_empty_line(_)
+ * display_empty_line
  * Displays an empty line. Used to fill empty cells that are not outer cells of the board.
  */
 display_empty_line :-
@@ -607,7 +607,7 @@ display_empty_line :-
 
 /**
  * Display Flower Ascii 1
- * display_flower_ascii_1(_)
+ * display_flower_ascii_1
  * Displays the first line of a flower.
  */
 display_flower_ascii_1 :-
@@ -619,7 +619,7 @@ display_flower_ascii_1 :-
 
 /**
  * Display Flower Ascii 2
- * display_flower_ascii_2(_)
+ * display_flower_ascii_2
  * Displays the second line of a flower.
  */
 display_flower_ascii_2 :-
@@ -631,7 +631,7 @@ display_flower_ascii_2 :-
 
 /**
  * Display Flower Ascii 3
- * display_flower_ascii_3(_)
+ * display_flower_ascii_3
  * Displays the third line of a flower.
  */
 display_flower_ascii_3 :-
@@ -641,7 +641,7 @@ display_flower_ascii_3 :-
 
 /**
  * Display Flower Ascii 4
- * display_flower_ascii_4(_)
+ * display_flower_ascii_4
  * Displays the fourth line of a flower.
  */
 display_flower_ascii_4 :-
@@ -651,10 +651,27 @@ display_flower_ascii_4 :-
 
 /**
  * Display Flower Ascii 5
- * display_flower_ascii_5(_)
+ * display_flower_ascii_5
  * Displays the fifth line of a flower.
  */
 display_flower_ascii_5 :-
     ansi_format([fg(green), bg(blue)], '~w', ['   ']),
     ansi_format([fg(black), bg(green)], '~w', ['\\_______/']),
     ansi_format([fg(green), bg(blue)], '~w', ['   ']).
+
+/**
+ * Display position
+ * displayPosition(+Msg, +Pos)
+ * Displays Pos in the format (Row, Column), with Msg before.
+ *
+ * Msg -> message to prepend.
+ * Pos -> Position to display.
+ */
+displayPosition(Msg, [Row, Col]) :-
+    write(Msg),
+    put_char('('),
+    write(Row),
+    put_char(','),
+    write(Col),
+    put_char(')'),
+    nl.
