@@ -45,7 +45,7 @@ error_msg(Msg) :-
  * B -> Variable to return created board.
  */
 init_board(B) :-
-    initialBoard(B).
+    test(B).
 
 
 /**
@@ -495,22 +495,59 @@ continue_jumping(InBoard, Player, [FrogRow, FrogCol], JumpN, OutBoard) :-
             wait_for_input
         ).
 
-play_turn(InBoard, Player, OutBoard) :-
+/**
+ * Player turn
+ * player_turn(+InBoard, +Player, -OutBoard)
+ * Performs a player controlled turn.
+ *
+ * InBoard -> Initial board.
+ * Player -> Current player turn.
+ * OutBoard -> Modified board after turn ends.
+ */
+player_turn(InBoard, Player, OutBoard) :-
     % read jump positions until valid
     repeat,
         read_jump_positions(InBoard, Player, InitPos, MidPos, EndPos, Frog), !,
 
-    % perform the jump
     jump(InBoard, InitPos, MidPos, EndPos, Frog, NewBoard),
 
     display_game(NewBoard, Player, 1),
 
     continue_jumping(NewBoard, Player, EndPos, 2, OutBoard).
 
+/**
+ * Player vs Player game
+ * pvp_game(+InBoard, +Player, -Winner)
+ * Plays a pvp game with the given InBoard and starting player Player.
+ *
+ * InBoard -> Initial board.
+ * Player -> Current player turn.
+ * Winner -> Player who wins the game.
+ */
+pvp_game(InBoard, Player, Winner) :-
+    display_game(InBoard, Player, 0),
+    player_turn(InBoard, Player, MidBoard),
+    remove_outer_frogs(MidBoard, FinalBoard),
+    (
+        game_over(FinalBoard, Player, Winner),
+        display_game(FinalBoard, empty, 0);
+
+        next_player(Player, NextPlayer),
+        pvp_game(FinalBoard, NextPlayer, Winner)
+    ), !.
+
+/**
+ * Player vs Player
+ * player_vs_player
+ * Starts a 2 human player game.
+ */
+player_vs_player :-
+    init_board(InitialBoard),
+    random_between(1, 2, FirstPlayer),
+    pvp_game(InitialBoard, FirstPlayer, Winner),
+    nl, write('Player '), write(Winner), write(' won!'), nl.
+
 
 play_game :-
-    init_board(B),
-    display_game(B, 1, 0),
-    play_turn(B, 1, NewB),
-    display_game(NewB, 2, 0).
+    player_vs_player.
     

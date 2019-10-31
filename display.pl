@@ -33,19 +33,20 @@ frog_color(yellow, yellow).
  * JumpCount -> Number of jumps in the current turn.
  */
 display_game(Board, Player, JumpCount) :-
-    JumpCount >= 0,
-    player_color(Player, _), nl,
-    display_board(Board), nl,
+    JumpCount >= 0, 
+    nl, display_board(Board), nl,
     display_turn(Player, JumpCount).
 
 /**
  * Display Turn
  * display_turn(+Player, +JumpCount)
  * Displays an indicator of the next player to make a move.
+ * If player does not exist it does nothing.
  *
  * Player -> The player number that will play the next turn.
  * JumpCount -> Number of jumps in the current turn.
  */
+display_turn(Player, _) :- \+player_color(Player, _), !.
 display_turn(Player, JumpCount) :-
     JumpCount >= 0,
     player_color(Player, Color),
