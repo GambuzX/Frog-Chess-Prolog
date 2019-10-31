@@ -34,7 +34,7 @@ frog_color(yellow, yellow).
  */
 display_game(Board, Player, JumpCount) :-
     JumpCount >= 0,
-    playerFrog(Player, _), nl,
+    player_color(Player, _), nl,
     display_board(Board), nl,
     display_turn(Player, JumpCount).
 
@@ -661,13 +661,13 @@ display_flower_ascii_5 :-
 
 /**
  * Display position
- * displayPosition(+Msg, +Pos)
+ * display_position(+Msg, +Pos)
  * Displays Pos in the format (Row, Column), with Msg before.
  *
  * Msg -> message to prepend.
  * Pos -> Position to display.
  */
-displayPosition(Msg, [Row, Col]) :-
+display_position(Msg, [Row, Col]) :-
     write(Msg),
     put_char('('),
     write(Row),
