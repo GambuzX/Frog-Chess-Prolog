@@ -676,3 +676,14 @@ display_position(Msg, [Row, Col]) :-
     write(Col),
     put_char(')'),
     nl.
+
+/**
+ * Display winner
+ * display_winner(+Winner)
+ * Displays the winner with colors.
+ *
+ * Winner -> Player that won the game.
+ */
+display_winner(Winner) :-
+    player_color(Winner, Color),
+    ansi_format([fg(Color)], 'Player ~d won!', [Winner]).

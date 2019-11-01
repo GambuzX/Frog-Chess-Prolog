@@ -45,7 +45,7 @@ error_msg(Msg) :-
  * B -> Variable to return created board.
  */
 init_board(B) :-
-    initialBoard(B).
+    isolatedPiece(B).
 
 
 /**
@@ -545,7 +545,8 @@ player_vs_player :-
     init_board(InitialBoard),
     random_between(1, 2, FirstPlayer),
     pvp_game(InitialBoard, FirstPlayer, Winner),
-    nl, write('Player '), write(Winner), write(' won!'), nl.
+    nl, 
+    display_winner(Winner).
 
 
 play_game :-
