@@ -27,6 +27,17 @@ valid_position([Row, Column]) :-
     Row >= 0, Row =< 7,
     Column >= 0, Column =< 7.
 
+/** 
+ * Valid fill position
+ * valid_fill_position(+Position)
+ * Checks if a given position is valid to fill with a frog in the beginning of the game
+ *
+ * Position -> Position to check, in the format [Row, Column].
+ */
+valid_fill_position([Row, Column]) :-
+    Row > 0, Row < 7,
+    Column > 0, Column < 7.
+
 /**
  * Display a error message
  * error_msg(+Msg)
@@ -45,13 +56,43 @@ error_msg(Msg) :-
  * B -> Variable to return created board.
  */
 init_board(B) :-
-    isolatedPiece(B).
+    emptyBoard(InitBoard),
+    fill_board(InitBoard, 1, 0, B).
 
+/**
+ * Fill board
+ * fill_board(+Board, +Player, +Frogs, -NewBoard)
+ * Fills the board with frogs.
+ * 
+ * Board -> Board to fill.
+ * Player -> Number of the player that will fill that next position
+ * Frogs -> Number of frogs that are already on the board
+ * NewBoard -> Board filled with frogs
+ */
+fill_board(Board, _, 36, NewBoard) :-
+    NewBoard = Board, !.
+
+fill_board(Board, Player, Frog, NewBoard) :-
+    display_board(Board), !,
+    display_fill_turn(Player), !,
+    repeat,
+        (
+            read_position('Frog Position? ', Pos),
+            get_position(Board, Pos, empty),
+            valid_fill_position(Pos),
+            !;
+            error_msg('Invalid position!')
+        ),
+    player_frog(Player, Value),
+    set_position(Board, Pos, Value, IntBoard),
+    next_player(Player, NextPlayer),
+    NextFrog is Frog + 1,
+    fill_board(IntBoard, NextPlayer, NextFrog, NewBoard).    
 
 /**
  * Get Target Row
  * get_target_row(+Board, +InRow, -OutRow)
- * Returns the row of of index InRow from Board in OutRow.
+ * Returns the row of index InRow from Board in OutRow.
  * Uses InRow as a counter and returns current value when it reaches 0.
  * 
  * Board -> List of rows.

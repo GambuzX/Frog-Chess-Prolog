@@ -183,7 +183,9 @@ read_position(PrefixText, [Row, Col]) :-
  * Answer -> User answer, 'y' or 'n'.
  */
 yn_answer('y').
+yn_answer('Y').
 yn_answer('n').
+yn_answer('N').
 
 /**
  * Ask Yes or No Question
