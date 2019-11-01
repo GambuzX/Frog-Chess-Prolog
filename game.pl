@@ -45,7 +45,7 @@ error_msg(Msg) :-
  * B -> Variable to return created board.
  */
 init_board(B) :-
-    test(B).
+    initialBoard(B).
 
 
 /**
