@@ -86,7 +86,8 @@ display_cpu_fill_turn(Player, [Row|Column]) :-
     player_color(Player, Color),
     write('  /=======================\\  '), nl,
     RowLetter is 97 + Row,
-    write('  | '), ansi_format([fg(black), bg(Color)], 'CPU choosed (~c, ~d)...', [RowLetter, Column]), write(' |'), nl,
+    Col is Column + 1,
+    write('  | '), ansi_format([fg(black), bg(Color)], 'CPU choosed (~c, ~d)...', [RowLetter, Col]), write(' |'), nl,
     write('  \\=======================/  '), nl, nl.
 
 /**
@@ -729,9 +730,9 @@ display_winner(Winner) :-
 display_game_modes :-   
     nl,
     write('Frog Chess has the following modes: '), nl, nl,
-    write('1- Player vs. Player'), nl,
-    write('2- Player vs. CPU'), nl,
-    write('3- CPU vs. CPU'), nl, nl. 
+    write('\t1- Player vs. Player'), nl,
+    write('\t2- Player vs. CPU'), nl,
+    write('\t3- CPU vs. CPU'), nl, nl. 
 
 /**
  * Display the game name
@@ -743,4 +744,4 @@ display_game_name :-
     ansi_format([fg(blue)], "| |     |    | |    | |          |      |    | |     |     |      |", []), nl,
     ansi_format([fg(blue)], "| |__   |____| |    | |  __      |      |____| |__   |___  |___   |", []), nl,
     ansi_format([fg(blue)], "| |     |  \\   |____| |____|     |____  |    | |____ ____| ____|  |", []), nl,
-    ansi_format([fg(blue)], "\\=================================================================/", []).
+    ansi_format([fg(blue)], "\\=================================================================/", []), nl.

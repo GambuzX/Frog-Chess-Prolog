@@ -129,6 +129,7 @@ error_msg(Msg) :-
  */
 init_board(B, FirstPlayer, TypeOfGame) :-
     emptyBoard(InitBoard),
+    ansi_format([fg(blue)], 'BEFORE START THE GAME, FILL THE BOARD WITH FROGS...', []), nl, nl,
     fill_board(InitBoard, FirstPlayer, 0, B, TypeOfGame).
 
 /**
@@ -142,7 +143,8 @@ init_board(B, FirstPlayer, TypeOfGame) :-
  * NewBoard -> Board filled with frogs
  * TypeOfGame -> Indicates the type of game (0 - player vs player; 1 - player vs cpu; 2 - cpu vs cpu)
  */
-fill_board(Board, _, 36, Board, _).
+fill_board(Board, _, 36, Board, _) :-
+    nl, ansi_format([fg(blue)], 'STARTING THE GAME...', []), nl, nl.
 
 fill_board(Board, Player, Frog, NewBoard, TypeOfGame) :-
     (

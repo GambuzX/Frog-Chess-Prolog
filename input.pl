@@ -99,12 +99,12 @@ read_col(Col) :-
  * Row -> Variable to return read value.
  */
 read_row(Row) :-
-    read_single_char(Row),
-    char_type(Row, alpha),
+    read_single_char(RowChar),
+    char_type(RowChar, alpha),
+    downcase_atom(RowChar, Row),
     char_code(Row, Code),
     Code >= 97,
     Code =< 104.
-
     
 
 /**
@@ -183,9 +183,7 @@ read_position(PrefixText, [Row, Col]) :-
  * Answer -> User answer, 'y' or 'n'.
  */
 yn_answer('y').
-yn_answer('Y').
 yn_answer('n').
-yn_answer('N').
 
 /**
  * Ask Yes or No Question
@@ -220,4 +218,5 @@ wait_for_input :-
 read_game_mode(Mode) :-
     read_single_integer(Mode),
     Mode >= 1,
-    Mode =< 3.
+    Mode =< 3,
+    write(Mode).
