@@ -71,6 +71,15 @@ display_fill_turn(Player) :-
     write('  | '), ansi_format([fg(black), bg(Color)], 'Player ~d Turn', [Player]), write(' |'), nl,
     write('  \\===============/  '), nl, nl.
 
+/**
+ * Display CPU Turn To Choose The Position Of Frog
+ * display_cpu_fill_turn(+Player, +Position)
+ * Displays the position choosen by the cpu.
+ * If player does not exist it does nothing.
+ *
+ * Player -> The player number.
+ * Position -> The position choosen by the cpu 
+ */
 display_cpu_fill_turn(Player, _) :- \+player_color(Player, _), !.
 
 display_cpu_fill_turn(Player, [Row|Column]) :-
@@ -712,3 +721,26 @@ display_position(Msg, [Row, Col]) :-
 display_winner(Winner) :-
     player_color(Winner, Color),
     ansi_format([fg(Color)], 'Player ~d won!', [Winner]).
+
+/**
+ * Display the three game modes
+ * display_game_modes
+ */
+display_game_modes :-   
+    nl,
+    write('Frog Chess has the following modes: '), nl, nl,
+    write('1- Player vs. Player'), nl,
+    write('2- Player vs. CPU'), nl,
+    write('3- CPU vs. CPU'), nl, nl. 
+
+/**
+ * Display the game name
+ * display_game_name
+ */
+display_game_name :-   
+    ansi_format([fg(blue)], "/=================================================================\\", []), nl,
+    ansi_format([fg(blue)], "|  ____  ____   ____   ____       ____          ____  ____  ____  |", []), nl,
+    ansi_format([fg(blue)], "| |     |    | |    | |          |      |    | |     |     |      |", []), nl,
+    ansi_format([fg(blue)], "| |__   |____| |    | |  __      |      |____| |__   |___  |___   |", []), nl,
+    ansi_format([fg(blue)], "| |     |  \\   |____| |____|     |____  |    | |____ ____| ____|  |", []), nl,
+    ansi_format([fg(blue)], "\\=================================================================/", []).

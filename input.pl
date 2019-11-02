@@ -210,3 +210,14 @@ ask_yn_question(Question, Answer) :-
 wait_for_input :-
     nl, write('Press any key to continue...'),
     get_single_char(_), nl.
+
+/**
+ * Reads the game mode 
+ * read_game_mode(-Mode)
+ *
+ * Mode -> Number that represents the game mode
+ */
+read_game_mode(Mode) :-
+    read_single_integer(Mode),
+    Mode >= 1,
+    Mode =< 3.

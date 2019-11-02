@@ -97,6 +97,17 @@ valid_fill_position([4, 6]).
 valid_fill_position([5, 6]).
 valid_fill_position([6, 6]).
 
+/** 
+ * Valid game mode
+ * valid_game_mode(+Mode)
+ * Checks if a given mode is valid 
+ *
+ * Mode -> Mode to check
+ */
+valid_game_mode(Mode) :-
+    Mode >= 0,
+    Mode =< 2.
+
 /**
  * Display a error message
  * error_msg(+Msg)
@@ -681,9 +692,32 @@ player_vs_computer :-
     init_board(InitialBoard, FirstPlayer, 1).
 
 play_game :-
-    player_vs_computer.
-    %player_vs_player.
+    display_game_name,
+    display_game_modes, !,
+    repeat,
+        (
+            write('What mode do you want to choose? '), 
+            read_game_mode(Mode), 
+            M is Mode - 1,
+            valid_game_mode(M),
+            nl, nl,
+            !;
+            error_msg('Invalid mode!')
+        ),
+    play_game_mode(M).
+
+/**
+ * Play game mode
+ * play_game_mode(+Mode)
+ * Starts the choosen mode
+ *
+ * Mode -> Mode that will be played
+ */
+play_game_mode(0) :-
+    player_vs_player.
     
+play_game_mode(1) :-
+    player_vs_computer.
 
 %%%%%%%%%%%%%%%%%%%%
 %                  %
