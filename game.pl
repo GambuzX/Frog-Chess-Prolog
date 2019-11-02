@@ -23,9 +23,70 @@ next_player(2, 1).
  *
  * Position -> Position to check, in the format [Row, Column].
  */
-valid_position([Row, Column]) :-
-    Row >= 0, Row =< 7,
-    Column >= 0, Column =< 7.
+valid_position([0, 0]).
+valid_position([1, 0]).
+valid_position([2, 0]).
+valid_position([3, 0]).
+valid_position([4, 0]).
+valid_position([5, 0]).
+valid_position([6, 0]).
+valid_position([7, 0]).
+valid_position([0, 1]).
+valid_position([1, 1]).
+valid_position([2, 1]).
+valid_position([3, 1]).
+valid_position([4, 1]).
+valid_position([5, 1]).
+valid_position([6, 1]).
+valid_position([7, 1]).
+valid_position([0, 2]).
+valid_position([1, 2]).
+valid_position([2, 2]).
+valid_position([3, 2]).
+valid_position([4, 2]).
+valid_position([5, 2]).
+valid_position([6, 2]).
+valid_position([7, 2]).
+valid_position([0, 3]).
+valid_position([1, 3]).
+valid_position([2, 3]).
+valid_position([3, 3]).
+valid_position([4, 3]).
+valid_position([5, 3]).
+valid_position([6, 3]).
+valid_position([7, 3]).
+valid_position([0, 4]).
+valid_position([1, 4]).
+valid_position([2, 4]).
+valid_position([3, 4]).
+valid_position([4, 4]).
+valid_position([5, 4]).
+valid_position([6, 4]).
+valid_position([7, 4]).
+valid_position([0, 5]).
+valid_position([1, 5]).
+valid_position([2, 5]).
+valid_position([3, 5]).
+valid_position([4, 5]).
+valid_position([5, 5]).
+valid_position([6, 5]).
+valid_position([7, 5]).
+valid_position([0, 6]).
+valid_position([1, 6]).
+valid_position([2, 6]).
+valid_position([3, 6]).
+valid_position([4, 6]).
+valid_position([5, 6]).
+valid_position([6, 6]).
+valid_position([7, 6]).
+valid_position([0, 7]).
+valid_position([1, 7]).
+valid_position([2, 7]).
+valid_position([3, 7]).
+valid_position([4, 7]).
+valid_position([5, 7]).
+valid_position([6, 7]).
+valid_position([7, 7]).
 
 /** 
  * Valid fill position
@@ -50,14 +111,15 @@ error_msg(Msg) :-
 
 /**
  * Initialize board
- * init_board(-Board)
+ * init_board(-Board, +FirstPlayer)
  * Creates a new board filled with frogs.
  * 
  * B -> Variable to return created board.
+ * FirstPlayer -> First player to put a frog
  */
-init_board(B) :-
+init_board(B, FirstPlayer) :-
     emptyBoard(InitBoard),
-    fill_board(InitBoard, 1, 0, B).
+    fill_board(InitBoard, FirstPlayer, 0, B).
 
 /**
  * Fill board
@@ -69,8 +131,7 @@ init_board(B) :-
  * Frogs -> Number of frogs that are already on the board
  * NewBoard -> Board filled with frogs
  */
-fill_board(Board, _, 36, NewBoard) :-
-    NewBoard = Board, !.
+fill_board(Board, _, 36, Board).
 
 fill_board(Board, Player, Frog, NewBoard) :-
     display_board(Board), !,
@@ -583,8 +644,8 @@ pvp_game(InBoard, Player, Winner) :-
  * Starts a 2 human player game.
  */
 player_vs_player :-
-    init_board(InitialBoard),
     random_between(1, 2, FirstPlayer),
+    init_board(InitialBoard, FirstPlayer),
     pvp_game(InitialBoard, FirstPlayer, Winner),
     nl, 
     display_winner(Winner).
@@ -593,3 +654,23 @@ player_vs_player :-
 play_game :-
     player_vs_player.
     
+
+%%%%%%%%%%%%%%%%%%%%
+%                  %
+%        AI        %
+%                  %
+%%%%%%%%%%%%%%%%%%%%
+
+/**
+ * generate_move(+Board, +Frog, -Move)
+ *
+ * Board -> Initial Board
+ * Player -> Player Frog
+ * Move -> List with all the jump positions of a move
+ */
+/*generate_move(Board, Frog, Move) :-
+    get_position(Board, Pos, Frog)
+    valid_position(Pos),*/
+
+
+%TODO ACABAR
