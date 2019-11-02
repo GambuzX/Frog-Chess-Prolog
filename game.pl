@@ -32,52 +32,16 @@ valid_position([5, 0]).
 valid_position([6, 0]).
 valid_position([7, 0]).
 valid_position([0, 1]).
-valid_position([1, 1]).
-valid_position([2, 1]).
-valid_position([3, 1]).
-valid_position([4, 1]).
-valid_position([5, 1]).
-valid_position([6, 1]).
 valid_position([7, 1]).
 valid_position([0, 2]).
-valid_position([1, 2]).
-valid_position([2, 2]).
-valid_position([3, 2]).
-valid_position([4, 2]).
-valid_position([5, 2]).
-valid_position([6, 2]).
 valid_position([7, 2]).
 valid_position([0, 3]).
-valid_position([1, 3]).
-valid_position([2, 3]).
-valid_position([3, 3]).
-valid_position([4, 3]).
-valid_position([5, 3]).
-valid_position([6, 3]).
 valid_position([7, 3]).
 valid_position([0, 4]).
-valid_position([1, 4]).
-valid_position([2, 4]).
-valid_position([3, 4]).
-valid_position([4, 4]).
-valid_position([5, 4]).
-valid_position([6, 4]).
 valid_position([7, 4]).
 valid_position([0, 5]).
-valid_position([1, 5]).
-valid_position([2, 5]).
-valid_position([3, 5]).
-valid_position([4, 5]).
-valid_position([5, 5]).
-valid_position([6, 5]).
 valid_position([7, 5]).
 valid_position([0, 6]).
-valid_position([1, 6]).
-valid_position([2, 6]).
-valid_position([3, 6]).
-valid_position([4, 6]).
-valid_position([5, 6]).
-valid_position([6, 6]).
 valid_position([7, 6]).
 valid_position([0, 7]).
 valid_position([1, 7]).
@@ -87,6 +51,7 @@ valid_position([4, 7]).
 valid_position([5, 7]).
 valid_position([6, 7]).
 valid_position([7, 7]).
+valid_position(Position) :- valid_fill_position(Position).
 
 /** 
  * Valid fill position
@@ -95,9 +60,42 @@ valid_position([7, 7]).
  *
  * Position -> Position to check, in the format [Row, Column].
  */
-valid_fill_position([Row, Column]) :-
-    Row > 0, Row < 7,
-    Column > 0, Column < 7.
+valid_fill_position([1, 1]).
+valid_fill_position([2, 1]).
+valid_fill_position([3, 1]).
+valid_fill_position([4, 1]).
+valid_fill_position([5, 1]).
+valid_fill_position([6, 1]).
+valid_fill_position([1, 2]).
+valid_fill_position([2, 2]).
+valid_fill_position([3, 2]).
+valid_fill_position([4, 2]).
+valid_fill_position([5, 2]).
+valid_fill_position([6, 2]).
+valid_fill_position([1, 3]).
+valid_fill_position([2, 3]).
+valid_fill_position([3, 3]).
+valid_fill_position([4, 3]).
+valid_fill_position([5, 3]).
+valid_fill_position([6, 3]).
+valid_fill_position([1, 4]).
+valid_fill_position([2, 4]).
+valid_fill_position([3, 4]).
+valid_fill_position([4, 4]).
+valid_fill_position([5, 4]).
+valid_fill_position([6, 4]).
+valid_fill_position([1, 5]).
+valid_fill_position([2, 5]).
+valid_fill_position([3, 5]).
+valid_fill_position([4, 5]).
+valid_fill_position([5, 5]).
+valid_fill_position([6, 5]).
+valid_fill_position([1, 6]).
+valid_fill_position([2, 6]).
+valid_fill_position([3, 6]).
+valid_fill_position([4, 6]).
+valid_fill_position([5, 6]).
+valid_fill_position([6, 6]).
 
 /**
  * Display a error message
@@ -111,31 +109,59 @@ error_msg(Msg) :-
 
 /**
  * Initialize board
- * init_board(-Board, +FirstPlayer)
+ * init_board(-Board, +FirstPlayer, +TypeOfGame)
  * Creates a new board filled with frogs.
  * 
  * B -> Variable to return created board.
  * FirstPlayer -> First player to put a frog
+ * TypeOfGame -> Indicates the type of game (0 - player vs player; 1 - player vs computer)
  */
-init_board(B, FirstPlayer) :-
+init_board(B, FirstPlayer, TypeOfGame) :-
     emptyBoard(InitBoard),
-    fill_board(InitBoard, FirstPlayer, 0, B).
+    fill_board(InitBoard, FirstPlayer, 0, B, TypeOfGame).
 
 /**
  * Fill board
- * fill_board(+Board, +Player, +Frogs, -NewBoard)
+ * fill_board(+Board, +Player, +Frogs, -NewBoard, +TypeOfGame)
  * Fills the board with frogs.
  * 
  * Board -> Board to fill.
  * Player -> Number of the player that will fill that next position
  * Frogs -> Number of frogs that are already on the board
  * NewBoard -> Board filled with frogs
+ * TypeOfGame -> Indicates the type of game (0 - player vs player; 1 - player vs cpu; 2 - cpu vs cpu)
  */
-fill_board(Board, _, 36, Board).
+fill_board(Board, _, 36, Board, _).
 
-fill_board(Board, Player, Frog, NewBoard) :-
+fill_board(Board, Player, Frog, NewBoard, TypeOfGame) :-
+    (
+        TypeOfGame = 0; % In player vs player mode, there will always be a player choosing the frog position 
+        TypeOfGame = 1, Player = 1 % In player vs cpu mode, the first player is the person that will choose the frog
+    ),
     display_board(Board), !,
     display_fill_turn(Player), !,
+    player_fill_choose(Board, Pos),
+    player_frog(Player, Value),
+    set_position(Board, Pos, Value, IntBoard),
+    next_player(Player, NextPlayer),
+    NextFrog is Frog + 1,
+    fill_board(IntBoard, NextPlayer, NextFrog, NewBoard, TypeOfGame).    
+
+fill_board(Board, Player, Frog, NewBoard, TypeOfGame) :-
+    (
+        TypeOfGame = 1, Player = 2; % In player vs cpu mode, the second player is the cpu
+        TypeOfGame = 2 % Cpu vs cpu mode
+    ),
+    cpu_choose(Board, Pos),
+    display_cpu_fill_turn(Player, Pos),
+    player_frog(Player, Value),
+    set_position(Board, Pos, Value, IntBoard),
+    next_player(Player, NextPlayer),
+    NextFrog is Frog + 1,
+    fill_board(IntBoard, NextPlayer, NextFrog, NewBoard, TypeOfGame).    
+
+
+player_fill_choose(Board, Pos) :- 
     repeat,
         (
             read_position('Frog Position? ', Pos),
@@ -143,12 +169,11 @@ fill_board(Board, Player, Frog, NewBoard) :-
             valid_fill_position(Pos),
             !;
             error_msg('Invalid position!')
-        ),
-    player_frog(Player, Value),
-    set_position(Board, Pos, Value, IntBoard),
-    next_player(Player, NextPlayer),
-    NextFrog is Frog + 1,
-    fill_board(IntBoard, NextPlayer, NextFrog, NewBoard).    
+        ).
+
+cpu_choose(Board, Pos) :-
+    setof(X, (valid_fill_position(X), get_position(Board, X, empty)), Positions),
+    random_member(Pos, Positions).
 
 /**
  * Get Target Row
@@ -645,14 +670,19 @@ pvp_game(InBoard, Player, Winner) :-
  */
 player_vs_player :-
     random_between(1, 2, FirstPlayer),
-    init_board(InitialBoard, FirstPlayer),
+    init_board(InitialBoard, FirstPlayer, 0),
     pvp_game(InitialBoard, FirstPlayer, Winner),
     nl, 
     display_winner(Winner).
 
 
+player_vs_computer :-
+    random_between(1, 2, FirstPlayer),
+    init_board(InitialBoard, FirstPlayer, 1).
+
 play_game :-
-    player_vs_player.
+    player_vs_computer.
+    %player_vs_player.
     
 
 %%%%%%%%%%%%%%%%%%%%
@@ -671,6 +701,5 @@ play_game :-
 /*generate_move(Board, Frog, Move) :-
     get_position(Board, Pos, Frog)
     valid_position(Pos),*/
-
 
 %TODO ACABAR

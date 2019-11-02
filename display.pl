@@ -71,7 +71,14 @@ display_fill_turn(Player) :-
     write('  | '), ansi_format([fg(black), bg(Color)], 'Player ~d Turn', [Player]), write(' |'), nl,
     write('  \\===============/  '), nl, nl.
 
+display_cpu_fill_turn(Player, _) :- \+player_color(Player, _), !.
 
+display_cpu_fill_turn(Player, [Row|Column]) :-
+    player_color(Player, Color),
+    write('  /=======================\\  '), nl,
+    RowLetter is 97 + Row,
+    write('  | '), ansi_format([fg(black), bg(Color)], 'CPU choosed (~c, ~d)...', [RowLetter, Column]), write(' |'), nl,
+    write('  \\=======================/  '), nl, nl.
 
 /**
  * Display Board
