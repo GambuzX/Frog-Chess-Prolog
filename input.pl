@@ -220,3 +220,41 @@ read_game_mode(Mode) :-
     Mode >= 1,
     Mode =< 3,
     write(Mode).
+
+/**
+ * Reads the game dimensions 
+ * read_game_dimensions(-Rows, -Columns)
+ * Both dimensions must be between 3 and 15.
+ * 3x3 board is not allowed.
+ *
+ * Rows -> Number of rows in the board
+ * Columns -> Number of columns in the board
+ */
+read_game_dimensions(Rows, Columns) :-
+    write('Number of rows: '),
+    read_integer(Rows),
+    (
+        Rows >= 3, !;
+        write('Must have at least 3 rows.'), nl, fail
+    ),
+    (
+        Rows =< 15, !;
+        write('Max rows allowed is 15.'), nl, fail
+    ),
+
+    write('Number of columns: '),
+    read_integer(Columns),
+    (
+        Columns >= 3, !;
+        write('Must have at least 3 columns.'), nl, fail
+    ),
+    (
+        Columns =< 15, !;
+        write('Max columns allowed is 15.'), nl, fail
+    ),
+
+    (
+        Rows = 3, Columns = 3, write('Board can\'t be 3x3'), nl, !, fail;
+        !
+    ),
+    nl.

@@ -107,7 +107,7 @@ display_board(Board) :- display_board_helper(Board, 0).
  * Board -> List of lists containig a representation of the board.
  * RowNumber -> Number of the row that will be displayed. The RowNumber is in the range [0, 7].
  */
-display_board_helper([], _).
+display_board_helper([], _) :- !.
 display_board_helper([Curr_Row|Rest], RowN) :-
     RowN >= 0,
     RowN < 8,
@@ -168,7 +168,7 @@ display_row_content(Row, RowNumber) :-
  * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
  * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
  */
-display_content_row_1([], _, _).
+display_content_row_1([], _, _) :- !.
 
 display_content_row_1([Content|Rest], RowNumber, 0) :-    
     put_code(186), % ║ 
@@ -196,7 +196,7 @@ display_content_row_1([Content|Rest], RowNumber, ColN) :-
  * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
  * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
  */
-display_content_row_2([], _, _).
+display_content_row_2([], _, _) :- !.
 
 display_content_row_2([Content|Rest], RowNumber, 0) :-    
     put_code(186), % ║ 
@@ -224,7 +224,7 @@ display_content_row_2([Content|Rest], RowNumber, ColN) :-
  * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
  * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
  */
-display_content_row_3([], _, _).
+display_content_row_3([], _, _) :- !.
 
 display_content_row_3([Content|Rest], RowNumber, 0) :-    
     put_code(186), % ║ 
@@ -252,7 +252,7 @@ display_content_row_3([Content|Rest], RowNumber, ColN) :-
  * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
  * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
  */
-display_content_row_4([], _, _).
+display_content_row_4([], _, _) :- !.
 
 display_content_row_4([Content|Rest], RowNumber, 0) :-    
     put_code(186), % ║ 
@@ -279,7 +279,7 @@ display_content_row_4([Content|Rest], RowNumber, ColN) :-
  * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
  * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
  */
-display_content_row_5([], _, _).
+display_content_row_5([], _, _) :- !.
 
 display_content_row_5([Content|Rest], RowNumber, 0) :-    
     put_code(186), % ║ 
@@ -305,7 +305,7 @@ display_content_row_5([Content|Rest], RowNumber, ColN) :-
 display_col_head(7) :-
     write('        '),
     ansi_format([fg(blue)], '~w', [8]),
-    write('       ').
+    write('       '), !.
 
 display_col_head(ColN) :-
     ColN >= 0,
@@ -333,7 +333,7 @@ display_top(0) :-
 
 display_top(7) :-
     display_div_line(15),
-    put_code(187). % ╗
+    put_code(187), !. % ╗
 
 display_top(ColN) :-
     ColN > 0,
@@ -359,7 +359,7 @@ display_bottom(0) :-
 
 display_bottom(7) :-
     display_div_line(15),
-    put_code(188). %╝
+    put_code(188), !. %╝
 
 display_bottom(ColN) :-
     ColN > 0,
@@ -385,7 +385,7 @@ display_div(0) :-
 
 display_div(7) :-
     display_div_line(15),
-    put_code(185). % ╣ 
+    put_code(185), !. % ╣ 
 
 display_div(ColN) :-
     ColN > 0,
@@ -402,7 +402,7 @@ display_div(ColN) :-
  *
  * Count -> Number of times to print the character, decrementing in each call.
  */
-display_div_line(0).
+display_div_line(0) :- !.
 display_div_line(Count) :-
     Count > 0,
     put_code(205), % ═
