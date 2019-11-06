@@ -1,83 +1,100 @@
 /** 
+ * Iterate values
+ * iterate_values(+Target, +Current, -Out)
+ * Iterates over the values from Curr to Target, returning them in Out.
+ * 
+ * Target -> Last value.
+ * Curr -> Current value.
+ * Out -> Variable to return values.
+ */
+iterate_values(Target, Curr, Curr) :-
+    Curr >= 0,
+    Curr < Target.
+
+iterate_values(Target, Curr, Out) :-
+    Curr >= 0,
+    Curr < Target,
+    Next is Curr+1,
+    iterate_values(Target, Next, Out).
+
+
+/** 
+ * Valid row
+ * valid_row(+Board, -Row)
+ * Checks if a given row is valid given the current board.
+ * 
+ * Board -> Game Board
+ * Row -> Row to check/retrieve.
+ */
+valid_row(Board, Row) :-
+    length(Board, L),
+    iterate_values(L, 0, Row).
+
+/** 
+ * Valid column
+ * valid_column(+Board, -Column)
+ * Checks if a given column is valid given the current board.
+ * 
+ * Board -> Game Board
+ * Column -> Column to check/retrieve.
+ */
+valid_column([FirstRow | _], Column) :-
+    length(FirstRow, L),
+    iterate_values(L, 0, Column).
+
+
+/** 
  * Valid position
- * valid_position(+Position)
- * Checks if a given position is valid, that is, inside a 8x8 0-indexed board
+ * valid_position(+Board, -Position)
+ * Checks if a given position is valid, that is, inside the given board.
  *
  * Position -> Position to check, in the format [Row, Column].
  */
-valid_position([0, 0]).
-valid_position([1, 0]).
-valid_position([2, 0]).
-valid_position([3, 0]).
-valid_position([4, 0]).
-valid_position([5, 0]).
-valid_position([6, 0]).
-valid_position([7, 0]).
-valid_position([0, 1]).
-valid_position([7, 1]).
-valid_position([0, 2]).
-valid_position([7, 2]).
-valid_position([0, 3]).
-valid_position([7, 3]).
-valid_position([0, 4]).
-valid_position([7, 4]).
-valid_position([0, 5]).
-valid_position([7, 5]).
-valid_position([0, 6]).
-valid_position([7, 6]).
-valid_position([0, 7]).
-valid_position([1, 7]).
-valid_position([2, 7]).
-valid_position([3, 7]).
-valid_position([4, 7]).
-valid_position([5, 7]).
-valid_position([6, 7]).
-valid_position([7, 7]).
-valid_position(Position) :- valid_fill_position(Position).
+valid_position(Board, [Row, Column]) :-
+    valid_row(Board, Row),
+    valid_column(Board, Column).
+
+/** 
+ * Valid fill row
+ * valid_fill_row(+Board, -Row)
+ * Checks if a given row is valid to fill given the current board.
+ * Can not be in an edge of the board.
+ * 
+ * Board -> Game Board
+ * Row -> Row to check/retrieve.
+ */
+valid_fill_row(Board, Row) :-
+    length(Board, L),
+    LM is L-1,
+    iterate_values(LM, 1, Row).
+
+
+/** 
+ * Valid fill column
+ * valid_fill_column(+Board, -Column)
+ * Checks if a given column is valid to fill given the current board.
+ * Can not be in an edge of the board.
+ * 
+ * Board -> Game Board
+ * Column -> Column to check/retrieve.
+ */
+valid_fill_column(Board, Column) :-
+    length(Board, L),
+    LM is L-1,
+    iterate_values(LM, 1, Column).
 
 /** 
  * Valid fill position
- * valid_fill_position(+Position)
- * Checks if a given position is valid to fill with a frog in the beginning of the game
+ * valid_fill_position(+Board, -Position)
+ * Checks if a given position is valid to fill with a frog in the beginning of the game.
+ * May be used to retrieve valid positions from the board.
  *
- * Position -> Position to check, in the format [Row, Column].
+ * Board -> Game board.
+ * Position -> Position to check/retrieve, in the format [Row, Column].
  */
-valid_fill_position([1, 1]).
-valid_fill_position([2, 1]).
-valid_fill_position([3, 1]).
-valid_fill_position([4, 1]).
-valid_fill_position([5, 1]).
-valid_fill_position([6, 1]).
-valid_fill_position([1, 2]).
-valid_fill_position([2, 2]).
-valid_fill_position([3, 2]).
-valid_fill_position([4, 2]).
-valid_fill_position([5, 2]).
-valid_fill_position([6, 2]).
-valid_fill_position([1, 3]).
-valid_fill_position([2, 3]).
-valid_fill_position([3, 3]).
-valid_fill_position([4, 3]).
-valid_fill_position([5, 3]).
-valid_fill_position([6, 3]).
-valid_fill_position([1, 4]).
-valid_fill_position([2, 4]).
-valid_fill_position([3, 4]).
-valid_fill_position([4, 4]).
-valid_fill_position([5, 4]).
-valid_fill_position([6, 4]).
-valid_fill_position([1, 5]).
-valid_fill_position([2, 5]).
-valid_fill_position([3, 5]).
-valid_fill_position([4, 5]).
-valid_fill_position([5, 5]).
-valid_fill_position([6, 5]).
-valid_fill_position([1, 6]).
-valid_fill_position([2, 6]).
-valid_fill_position([3, 6]).
-valid_fill_position([4, 6]).
-valid_fill_position([5, 6]).
-valid_fill_position([6, 6]).
+valid_fill_position(Board, [Row, Column]) :-
+    valid_fill_row(Board, Row),
+    valid_fill_column(Board, Column).
 
 /**
  * Get Target Row
