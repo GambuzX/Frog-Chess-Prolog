@@ -1,6 +1,7 @@
 :- include('game_state.pl').
 :- include('display.pl').
 :- include('input.pl').
+:- include('board.pl').
 
 /** 
  * Player Frog
@@ -13,89 +14,16 @@
 player_frog(1, blue).
 player_frog(2, yellow).
 
+/** 
+ * Next Player
+ * next_player(+Curr, -Next)
+ * Returns the player who is next to Curr.
+ *
+ * Curr -> Player who last played.
+ * Next -> Next player to play.
+ */
 next_player(1, 2).
 next_player(2, 1).
-
-/** 
- * Valid position
- * valid_position(+Position)
- * Checks if a given position is valid, that is, inside a 8x8 0-indexed board
- *
- * Position -> Position to check, in the format [Row, Column].
- */
-valid_position([0, 0]).
-valid_position([1, 0]).
-valid_position([2, 0]).
-valid_position([3, 0]).
-valid_position([4, 0]).
-valid_position([5, 0]).
-valid_position([6, 0]).
-valid_position([7, 0]).
-valid_position([0, 1]).
-valid_position([7, 1]).
-valid_position([0, 2]).
-valid_position([7, 2]).
-valid_position([0, 3]).
-valid_position([7, 3]).
-valid_position([0, 4]).
-valid_position([7, 4]).
-valid_position([0, 5]).
-valid_position([7, 5]).
-valid_position([0, 6]).
-valid_position([7, 6]).
-valid_position([0, 7]).
-valid_position([1, 7]).
-valid_position([2, 7]).
-valid_position([3, 7]).
-valid_position([4, 7]).
-valid_position([5, 7]).
-valid_position([6, 7]).
-valid_position([7, 7]).
-valid_position(Position) :- valid_fill_position(Position).
-
-/** 
- * Valid fill position
- * valid_fill_position(+Position)
- * Checks if a given position is valid to fill with a frog in the beginning of the game
- *
- * Position -> Position to check, in the format [Row, Column].
- */
-valid_fill_position([1, 1]).
-valid_fill_position([2, 1]).
-valid_fill_position([3, 1]).
-valid_fill_position([4, 1]).
-valid_fill_position([5, 1]).
-valid_fill_position([6, 1]).
-valid_fill_position([1, 2]).
-valid_fill_position([2, 2]).
-valid_fill_position([3, 2]).
-valid_fill_position([4, 2]).
-valid_fill_position([5, 2]).
-valid_fill_position([6, 2]).
-valid_fill_position([1, 3]).
-valid_fill_position([2, 3]).
-valid_fill_position([3, 3]).
-valid_fill_position([4, 3]).
-valid_fill_position([5, 3]).
-valid_fill_position([6, 3]).
-valid_fill_position([1, 4]).
-valid_fill_position([2, 4]).
-valid_fill_position([3, 4]).
-valid_fill_position([4, 4]).
-valid_fill_position([5, 4]).
-valid_fill_position([6, 4]).
-valid_fill_position([1, 5]).
-valid_fill_position([2, 5]).
-valid_fill_position([3, 5]).
-valid_fill_position([4, 5]).
-valid_fill_position([5, 5]).
-valid_fill_position([6, 5]).
-valid_fill_position([1, 6]).
-valid_fill_position([2, 6]).
-valid_fill_position([3, 6]).
-valid_fill_position([4, 6]).
-valid_fill_position([5, 6]).
-valid_fill_position([6, 6]).
 
 /** 
  * Valid game mode
@@ -119,17 +47,76 @@ error_msg(Msg) :-
     nl, write(Msg), nl, nl, fail.
 
 /**
+ * Initialize game dimensions
+ * init_game_dimensions(-Rows, -Columns)
+ * Asks the user to init game dimensions.
+ *
+ * Rows -> Number of rows in the board.
+ * Columns -> Number of columns in the board.
+ */
+init_game_dimensions(Rows, Columns) :-
+    ansi_format([fg(blue)], 'CONFIGURE THE BOARD DIMENSIONS', []), nl,
+    write('8x8 board  is recommended.'), nl,
+    repeat,
+        nl, read_game_dimensions(Rows, Columns), !.
+
+/**
+ * Create empty row
+ * append_rows(+Columns, -OutRow)
+ * Creates an empty row of size Columns
+ * 
+ * Columns -> Number of columns in the row.
+ * OutRow -> Variable to return created empty row.
+ */
+create_empty_row(0, []) :- !.
+create_empty_row(Columns, [empty | EmptyRow]) :-
+    Count is Columns-1,
+    create_empty_row(Count, EmptyRow).
+
+/**
+ * Append rows
+ * append_rows(+Rows, +EmptyRow, -OutBoard)
+ * Creates a new board by appending EmptyRow in an empty list Rows times.
+ * 
+ * Rows -> Number of rows in the board.
+ * EmptyRow -> Row to append.
+ * OutBoard -> Variable to return created empty board.
+ */
+append_rows(0, _, []) :- !.
+append_rows(Rows, EmptyRow, [EmptyRow | OutBoard]) :-
+    Count is Rows-1,
+    append_rows(Count, EmptyRow, OutBoard).
+
+/**
+ * Create empty board
+ * create_empty_board(+Rows, +Columns, -OutBoard)
+ * Creates a new empty board of given dimensions.
+ * 
+ * Rows -> Number of rows in the board.
+ * Columns -> Number of columns in the board.
+ * OutBoard -> Variable to return created empty board.
+ */
+create_empty_board(Rows, Columns, OutBoard) :-
+    create_empty_row(Columns, EmptyRow),
+    append_rows(Rows, EmptyRow, OutBoard).
+
+
+/**
  * Initialize board
- * init_board(-Board, +FirstPlayer, +TypeOfGame)
+ * init_board(+FirstPlayer, +TypeOfGame, -Board, -Rows, -Columns)
  * Creates a new board filled with frogs.
  * 
  * B -> Variable to return created board.
- * FirstPlayer -> First player to put a frog
- * TypeOfGame -> Indicates the type of game (0 - player vs player; 1 - player vs computer)
+ * FirstPlayer -> First player to put a frog.
+ * TypeOfGame -> Indicates the type of game (0 - player vs player; 1 - player vs computer).
+ * Rows -> Number of rows in the board.
+ * Columns -> Number of columns in the board.
  */
-init_board(B, FirstPlayer, TypeOfGame) :-
-    emptyBoard(InitBoard),
-    ansi_format([fg(blue)], 'BEFORE START THE GAME, FILL THE BOARD WITH FROGS...', []), nl, nl,
+init_board(FirstPlayer, TypeOfGame, B) :-
+    init_game_dimensions(Rows, Columns),
+    create_empty_board(Rows, Columns, InitBoard),
+    ansi_format([fg(blue)], 'BEFORE THE GAME STARTS, THE BOARD MUST BE FILLED WITH FROGS', []), nl,
+    write('Choose your positions!'), nl, nl, wait_for_input,
     fill_board(InitBoard, FirstPlayer, 0, B, TypeOfGame).
 
 /**
@@ -143,8 +130,14 @@ init_board(B, FirstPlayer, TypeOfGame) :-
  * NewBoard -> Board filled with frogs
  * TypeOfGame -> Indicates the type of game (0 - player vs player; 1 - player vs cpu; 2 - cpu vs cpu)
  */
-fill_board(Board, _, 36, Board, _) :-
-    nl, ansi_format([fg(blue)], 'STARTING THE GAME...', []), nl, nl.
+fill_board(Board, _, FrogCount, Board, _) :-
+    [FirstRow | _] = Board,
+    length(Board, NRows),
+    length(FirstRow, NCols),
+    FrogCount is (NCols-2)*(NRows-2),
+
+    display_board(Board), !,
+    nl, ansi_format([fg(blue)], 'STARTING THE GAME', []), nl, wait_for_input, nl.
 
 fill_board(Board, Player, Frog, NewBoard, TypeOfGame) :-
     (
@@ -177,128 +170,16 @@ fill_board(Board, Player, Frog, NewBoard, TypeOfGame) :-
 player_fill_choose(Board, Pos) :- 
     repeat,
         (
-            read_position('Frog Position? ', Pos),
+            read_position(Board, 'Frog Position? ', Pos),
             get_position(Board, Pos, empty),
-            valid_fill_position(Pos),
+            valid_fill_position(Board, Pos),
             !;
             error_msg('Invalid position!')
         ).
 
 cpu_choose(Board, Pos) :-
-    setof(X, (valid_fill_position(X), get_position(Board, X, empty)), Positions),
+    setof(X, (valid_fill_position(Board, X), get_position(Board, X, empty)), Positions),
     random_member(Pos, Positions).
-
-/**
- * Get Target Row
- * get_target_row(+Board, +InRow, -OutRow)
- * Returns the row of index InRow from Board in OutRow.
- * Uses InRow as a counter and returns current value when it reaches 0.
- * 
- * Board -> List of rows.
- * InRow -> Target row to find.
- * OutRow -> Variable to return target row.
- */
-get_target_row([TargetRow | _], 0, TargetRow).
-get_target_row([_ | Rest], InRow, OutRow) :-
-    InRow > 0,
-    N is InRow-1,
-    get_target_row(Rest, N, OutRow).
-
-/**
- * Get Value in Row
- * get_value_in_row(+Row, +Col, -Value)
- * Returns the value in index Col of given Row, in the variable Value.
- * Uses Col as a counter and returns current value when it reaches 0.
- * 
- * Row -> Row to search value.
- * Col -> Target column to find.
- * Value -> Variable to return target value.
- */
-get_value_in_row([TargetVal | _], 0, TargetVal).
-get_value_in_row([_ | Rest], Col, Value) :-
-    Col > 0,
-    N is Col-1,
-    get_value_in_row(Rest, N, Value).
-
-/**
- * Get position
- * get_position(+Board, +Position, -Value)
- * Returns the value in position [Row, Col] in the given board.
- * 
- * Board -> List of lists representing the board.
- * Position -> Position in the board, containing the values [Row, Col].
- * Value -> Variable to return target value.
- */
-get_position(Board, [Row, Col], Value) :-
-    get_target_row(Board, Row, TargetRow),
-    get_value_in_row(TargetRow, Col, Value).
-
-
-/**
- * Set new row
- * set_new_row(+Row, +TargetCol, +NewValue, +CurrColI, -NewRow)
- * Sets the value from Row at index TargetCol to NewValue. The rest of the row is copied.
- * Iterates over the row columns, copying them to NewRow, except in the case that it
- * finds the target column.
- * 
- * Row -> Row to iterate over.
- * TargetCol -> Target column.
- * NewValue -> New value to be added.
- * CurrColI -> Column iterator, from 0 to 7.
- * NewRow -> Returns the modified row.
- */
-set_new_row(_, _, _, 8, []).
-
-set_new_row([_ | Rest], TargetCol, NewValue, TargetCol, [NewValue | NewRow]) :-
-    NextColI is TargetCol+1,
-    set_new_row(Rest, TargetCol, NewValue, NextColI, NewRow).
-
-set_new_row([CurrVal | Rest], TargetCol, NewValue, ColI, [CurrVal | NewRow]) :-
-    TargetCol \= ColI, ColI >= 0, ColI =< 7,
-    NextColI is ColI+1,
-    set_new_row(Rest, TargetCol, NewValue, NextColI, NewRow).
-
-
-/**
- * Set position helper
- * set_position_helper(+Board, +TargetPosition, +NewValue, +CurrRowI, -NewBoard)
- * Changes the board position given by Target_position, [Row, Col], to the NewValue.
- * The rest of the board is copied.
- * Iterates over the board rows, copying them to the NewBoard, except in the case that
- * it finds the target row to be changed.
- * 
- * Board -> Original board to be changed.
- * TargetPosition -> Target position.
- * NewValue -> New value to be added.
- * CurrRowI -> Row iterator, from 0 to 7.
- * NewBoard -> Returns the modified board.
- */
-set_position_helper(_, _, _, 8, []).
-
-set_position_helper([CurrRow | Rest], [TargetRow, TargetCol], NewValue, TargetRow, [NewRow | NewBoard]) :-
-    set_new_row(CurrRow, TargetCol, NewValue, 0, NewRow),
-    NextRowI is TargetRow+1,
-    set_position_helper(Rest, [TargetRow, TargetCol], NewValue, NextRowI, NewBoard).
-
-set_position_helper([CurrRow | Rest], [TargetRow, TargetCol], NewValue, RowI, [CurrRow | NewBoard]) :-
-    TargetRow \= RowI, RowI >= 0, RowI =< 7,
-    NextRowI is RowI+1,
-    set_position_helper(Rest, [TargetRow, TargetCol], NewValue, NextRowI, NewBoard).
-
-/**
- * Set position
- * set_position(+Board, +Position, +NewValue, -NewBoard)
- * Changes the board position given by (Row, Col) to the NewValue.
- * 
- * Board -> Original board to be changed.
- * Position -> Position in the board to be changed, [Row , Column].
- * NewValue -> New value to be added.
- * NewBoard -> Returns the modified board.
- */
-set_position(Board, Pos, NewValue, NewBoard) :-
-    set_position_helper(Board, Pos, NewValue, 0, NewBoard).
-
-
 
 /**
  * Valid jump
@@ -309,45 +190,45 @@ set_position(Board, Pos, NewValue, NewBoard) :-
  * StartPosition -> Starting position.
  * EndPosition -> Ending position.
  */
-valid_jump([SRow, SCol], [ERow, ECol]) :-
+valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow,
     ECol is SCol+2,
-    valid_position([ERow, ECol]).
+    valid_position(Board, [ERow, ECol]).
     
-valid_jump([SRow, SCol], [ERow, ECol]) :-
+valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow,
     ECol is SCol-2,
-    valid_position([ERow, ECol]).
+    valid_position(Board, [ERow, ECol]).
     
-valid_jump([SRow, SCol], [ERow, ECol]) :-
+valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow+2,
     ECol is SCol,
-    valid_position([ERow, ECol]).
+    valid_position(Board, [ERow, ECol]).
     
-valid_jump([SRow, SCol], [ERow, ECol]) :-
+valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow-2,
     ECol is SCol,
-    valid_position([ERow, ECol]).
+    valid_position(Board, [ERow, ECol]).
     
-valid_jump([SRow, SCol], [ERow, ECol]) :-
+valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow-2,
     ECol is SCol-2,
-    valid_position([ERow, ECol]).
+    valid_position(Board, [ERow, ECol]).
     
-valid_jump([SRow, SCol], [ERow, ECol]) :-
+valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow+2,
     ECol is SCol-2,
-    valid_position([ERow, ECol]).
+    valid_position(Board, [ERow, ECol]).
     
-valid_jump([SRow, SCol], [ERow, ECol]) :-
+valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow-2,
     ECol is SCol+2,
-    valid_position([ERow, ECol]).
+    valid_position(Board, [ERow, ECol]).
     
-valid_jump([SRow, SCol], [ERow, ECol]) :-
+valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow+2,
     ECol is SCol+2,
-    valid_position([ERow, ECol]).
+    valid_position(Board, [ERow, ECol]).
 
 
 /**
@@ -374,7 +255,7 @@ middle_position([SRow,SCol], [ERow,ECol], [MRow,MCol]) :-
  */
 frog_can_jump(Board, FrogPos) :-
     % look through all valid jumps
-    valid_jump(FrogPos, Dest),
+    valid_jump(Board, FrogPos, Dest),
 
     % check if dest is empty
     get_position(Board, Dest, empty),
@@ -414,9 +295,9 @@ jump(InBoard, StartPos, MidPos, EndPos, Frog, OutBoard) :-
 read_end_position(Board, InitPos, MidPos, EndPos) :-
     
     (
-        read_position('Position to jump? ', EndPos),
+        read_position(Board, 'Position to jump? ', EndPos),
         get_position(Board, EndPos, empty),
-        valid_jump(InitPos, ValidPos),
+        valid_jump(Board, InitPos, ValidPos),
         ValidPos = EndPos, 
         !;
 
@@ -449,7 +330,7 @@ read_jump_positions(Board, Player, InitPos, MidPos, EndPos, Frog) :-
     % starting position
     repeat,
         (
-            read_position('Frog to jump? ', InitPos), 
+            read_position(Board, 'Frog to jump? ', InitPos), 
             get_position(Board, InitPos, Frog),
             player_frog(Player, Frog),
             frog_can_jump(Board, InitPos),
@@ -470,7 +351,10 @@ read_jump_positions(Board, Player, InitPos, MidPos, EndPos, Frog) :-
  * Player -> Player in question.
  * Pos -> Position currently checking.
  */
-jumpable_frog_in_row(_, _, [_,8]) :- !, fail.
+jumpable_frog_in_row([FirstRow | _], _, [_, LastCol]) :- 
+    length(FirstRow, NCols),
+    LastCol is NCols-1,
+    !, fail.
 
 jumpable_frog_in_row(Board, Player, Pos) :-
     player_frog(Player, Frog),
@@ -493,7 +377,9 @@ jumpable_frog_in_row(Board, Player, [RowI, ColI]) :-
  * Player -> Player in question.
  * RowI -> Index of current row.
  */
-find_jumpable_frog(_, _, 8) :- !, fail.
+find_jumpable_frog(Board, _, L) :- 
+    length(Board, L),
+    !, fail.
 
 find_jumpable_frog(Board, Player, RowI) :-
     jumpable_frog_in_row(Board, Player, [RowI, 0]), !.
@@ -521,52 +407,59 @@ game_over(Board, 2, 1) :- \+find_jumpable_frog(Board, 2, 0), !.
 
 /**
  * Remove row outer frogs
- * remove_row_outer_frogs(+CurrRow, +Positon, -NewRow)
+ * remove_row_outer_frogs(+CurrRow, +Dimensions, +Position, -NewRow)
  * Iterates over the columns of a row, emptying the positions on the board edges.
  * 
  * CurrRow -> Initial row.
+ * Dimensions -> Board dimensions, in the format [Rows, Columns].
  * Positon -> Current position.
  * NewRow -> Modified row.
  */
-remove_row_outer_frogs(_, [_, 8], []) :- !.
 
-remove_row_outer_frogs([_ | Rest], [0, ColI], [empty | NewRow]) :-
+%first row
+remove_row_outer_frogs([_ | Rest], Dimensions, [0, ColI], [empty | NewRow]) :-
     NextCol is ColI+1,
-    remove_row_outer_frogs(Rest, [0, NextCol], NewRow).
-    
-remove_row_outer_frogs([_ | Rest], [7, ColI], [empty | NewRow]) :-
+    remove_row_outer_frogs(Rest, Dimensions, [0, NextCol], NewRow).
+
+%last row
+remove_row_outer_frogs([_ | Rest], [NRows, NCols], [LastRow, ColI], [empty | NewRow]) :-
+    LastRow is NRows-1,
     NextCol is ColI+1,
-    remove_row_outer_frogs(Rest, [7, NextCol], NewRow).
+    remove_row_outer_frogs(Rest, [NRows, NCols], [LastRow, NextCol], NewRow).
 
-remove_row_outer_frogs([_ | Rest], [RowI, 0], [empty | NewRow]) :-
-    remove_row_outer_frogs(Rest, [RowI, 1], NewRow).
+%first column
+remove_row_outer_frogs([_ | Rest], Dimensions, [RowI, 0], [empty | NewRow]) :-
+    remove_row_outer_frogs(Rest, Dimensions, [RowI, 1], NewRow).
 
-remove_row_outer_frogs([_ | Rest], [RowI, 7], [empty | NewRow]) :-
-    remove_row_outer_frogs(Rest, [RowI, 8], NewRow).
+%last column
+remove_row_outer_frogs(_, [_, NCols], [_, LastCol], [empty]) :-
+    LastCol is NCols-1, !.
 
-remove_row_outer_frogs([CurrVal | Rest], [RowI, ColI], [CurrVal | NewRow]) :-
-    RowI > 0, RowI < 7,
-    ColI > 0, ColI < 7,
+remove_row_outer_frogs([CurrVal | Rest], [NRows, NCols], [RowI, ColI], [CurrVal | NewRow]) :-
+    RowI > 0, RowI < NRows-1,
+    ColI > 0, ColI < NCols-1,
     NextCol is ColI+1,
-    remove_row_outer_frogs(Rest, [RowI, NextCol], NewRow).
+    remove_row_outer_frogs(Rest, [NRows, NCols], [RowI, NextCol], NewRow).
 
 
 /**
  * Remove outer frogs helper
- * remove_outer_frogs_helper(+InBoard, +RowI, -OutBoard)
+ * remove_outer_frogs_helper(+InBoard, +NRows, +RowI, -OutBoard)
  * Removes frogs from InBoard in outer positions, iterating over all the rows.
  * In each iteration, appends a modified row to the OutBoard.
  * 
  * InBoard -> Initial board.
+ * NRows -> Number of rows in the board.
  * RowI -> Current row.
  * OutBoard -> Modified board.
  */
-remove_outer_frogs_helper([], 8, []) :- !.
+remove_outer_frogs_helper([], NRows, NRows, []) :- !.
 
-remove_outer_frogs_helper([CurrRow | Rest], RowI, [NewRow | NewBoard]) :-
-    remove_row_outer_frogs(CurrRow, [RowI, 0], NewRow),
+remove_outer_frogs_helper([CurrRow | Rest], NRows, RowI, [NewRow | NewBoard]) :-
+    length(CurrRow, NColumns),
+    remove_row_outer_frogs(CurrRow, [NRows, NColumns], [RowI, 0], NewRow),
     NextRow is RowI+1,
-    remove_outer_frogs_helper(Rest, NextRow, NewBoard).
+    remove_outer_frogs_helper(Rest, NRows, NextRow, NewBoard).
 
 /**
  * Remove outer frogs
@@ -577,7 +470,8 @@ remove_outer_frogs_helper([CurrRow | Rest], RowI, [NewRow | NewBoard]) :-
  * OutBoard -> Modified board.
  */
 remove_outer_frogs(InBoard, OutBoard) :-
-    remove_outer_frogs_helper(InBoard, 0, OutBoard).
+    length(InBoard, Rows),
+    remove_outer_frogs_helper(InBoard, Rows, 0, OutBoard).
 
 /**
  * Continue Jumping
@@ -683,7 +577,8 @@ pvp_game(InBoard, Player, Winner) :-
  */
 player_vs_player :-
     random_between(1, 2, FirstPlayer),
-    init_board(InitialBoard, FirstPlayer, 0),
+    init_board(FirstPlayer, 0, InitialBoard),
+    %initialBoard(InitialBoard),
     pvp_game(InitialBoard, FirstPlayer, Winner),
     nl, 
     display_winner(Winner).
@@ -691,7 +586,7 @@ player_vs_player :-
 
 player_vs_computer :-
     random_between(1, 2, FirstPlayer),
-    init_board(InitialBoard, FirstPlayer, 1).
+    init_board(FirstPlayer, 1, InitialBoard).
 
 play_game :-
     display_game_name,
