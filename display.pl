@@ -319,7 +319,7 @@ display_content_row_5([Content|Rest], [LastRow, LastCol], RowNumber, ColN) :-
 display_col_head(NCols, ColN) :-
     ColN is NCols-1,
     write('        '),
-    ansi_format([fg(blue)], '~w', [ColN]),
+    ansi_format([fg(blue)], '~w', [NCols]),
     write('       '), !.
 
 display_col_head(NCols, ColN) :-

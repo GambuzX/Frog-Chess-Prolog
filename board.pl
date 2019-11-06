@@ -144,54 +144,59 @@ get_position(Board, [Row, Col], Value) :-
 
 /**
  * Set new row
- * set_new_row(+Row, +TargetCol, +NewValue, +CurrColI, -NewRow)
+ * set_new_row(+Row, +NCols, +TargetCol, +NewValue, +CurrColI, -NewRow)
  * Sets the value from Row at index TargetCol to NewValue. The rest of the row is copied.
  * Iterates over the row columns, copying them to NewRow, except in the case that it
  * finds the target column.
  * 
  * Row -> Row to iterate over.
+ * NCols -> Number of columns in the board.
  * TargetCol -> Target column.
  * NewValue -> New value to be added.
  * CurrColI -> Column iterator, from 0 to 7.
  * NewRow -> Returns the modified row.
  */
-set_new_row(_, _, _, 8, []).
+set_new_row(_, NCols, _, _, NCols, []).
 
-set_new_row([_ | Rest], TargetCol, NewValue, TargetCol, [NewValue | NewRow]) :-
+set_new_row([_ | Rest], NCols, TargetCol, NewValue, TargetCol, [NewValue | NewRow]) :-
     NextColI is TargetCol+1,
-    set_new_row(Rest, TargetCol, NewValue, NextColI, NewRow).
+    set_new_row(Rest, NCols, TargetCol, NewValue, NextColI, NewRow).
 
-set_new_row([CurrVal | Rest], TargetCol, NewValue, ColI, [CurrVal | NewRow]) :-
-    TargetCol \= ColI, ColI >= 0, ColI =< 7,
+set_new_row([CurrVal | Rest], NCols, TargetCol, NewValue, ColI, [CurrVal | NewRow]) :-
+    TargetCol \= ColI, 
+    ColI >= 0, ColI < NCols,
     NextColI is ColI+1,
-    set_new_row(Rest, TargetCol, NewValue, NextColI, NewRow).
+    set_new_row(Rest, NCols, TargetCol, NewValue, NextColI, NewRow).
 
 
 /**
  * Set position helper
- * set_position_helper(+Board, +TargetPosition, +NewValue, +CurrRowI, -NewBoard)
+ * set_position_helper(+Board, +NRows, +TargetPosition, +NewValue, +CurrRowI, -NewBoard)
  * Changes the board position given by Target_position, [Row, Col], to the NewValue.
  * The rest of the board is copied.
  * Iterates over the board rows, copying them to the NewBoard, except in the case that
  * it finds the target row to be changed.
  * 
  * Board -> Original board to be changed.
+ * NRows -> Number of rows in the board.
  * TargetPosition -> Target position.
  * NewValue -> New value to be added.
  * CurrRowI -> Row iterator, from 0 to 7.
  * NewBoard -> Returns the modified board.
  */
-set_position_helper(_, _, _, 8, []).
+set_position_helper(_, NRows, _, _, NRows, []).
 
-set_position_helper([CurrRow | Rest], [TargetRow, TargetCol], NewValue, TargetRow, [NewRow | NewBoard]) :-
-    set_new_row(CurrRow, TargetCol, NewValue, 0, NewRow),
+set_position_helper([CurrRow | Rest], NRows, [TargetRow, TargetCol], NewValue, TargetRow, [NewRow | NewBoard]) :-
+    length(CurrRow, NCols),
+    set_new_row(CurrRow, NCols, TargetCol, NewValue, 0, NewRow),
     NextRowI is TargetRow+1,
-    set_position_helper(Rest, [TargetRow, TargetCol], NewValue, NextRowI, NewBoard).
+    set_position_helper(Rest, NRows, [TargetRow, TargetCol], NewValue, NextRowI, NewBoard).
 
-set_position_helper([CurrRow | Rest], [TargetRow, TargetCol], NewValue, RowI, [CurrRow | NewBoard]) :-
-    TargetRow \= RowI, RowI >= 0, RowI =< 7,
+set_position_helper([CurrRow | Rest], NRows, [TargetRow, TargetCol], NewValue, RowI, [CurrRow | NewBoard]) :-
+    TargetRow \= RowI, 
+    RowI >= 0, RowI < NRows,
     NextRowI is RowI+1,
-    set_position_helper(Rest, [TargetRow, TargetCol], NewValue, NextRowI, NewBoard).
+    set_position_helper(Rest, NRows, [TargetRow, TargetCol], NewValue, NextRowI, NewBoard).
 
 /**
  * Set position
@@ -204,4 +209,5 @@ set_position_helper([CurrRow | Rest], [TargetRow, TargetCol], NewValue, RowI, [C
  * NewBoard -> Returns the modified board.
  */
 set_position(Board, Pos, NewValue, NewBoard) :-
-    set_position_helper(Board, Pos, NewValue, 0, NewBoard).
+    length(Board, NRows),
+    set_position_helper(Board, NRows, Pos, NewValue, 0, NewBoard).

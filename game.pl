@@ -134,7 +134,7 @@ fill_board(Board, _, FrogCount, Board, _) :-
     [FirstRow | _] = Board,
     length(Board, NRows),
     length(FirstRow, NCols),
-    FrogCount is NCols*NRows,
+    FrogCount is (NCols-2)*(NRows-2),
 
     display_board(Board), !,
     nl, ansi_format([fg(blue)], 'STARTING THE GAME', []), nl, wait_for_input, nl.
