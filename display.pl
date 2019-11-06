@@ -97,303 +97,324 @@ display_cpu_fill_turn(Player, [Row|Column]) :-
  * 
  * Board -> Matrix containing the representation of the board.
  */
-display_board(Board) :- display_board_helper(Board, 0).
+display_board(Board) :- 
+    length(Board, NRows),
+    display_board_helper(Board, NRows, 0).
 
 /**
  * Display Board Helper
- * display_board_helper(+Board, +RowNumber)
+ * display_board_helper(+Board, +NRows, +RowNumber)
  * Helper function to display the board, that iterates over its Rows.
  * 
  * Board -> List of lists containig a representation of the board.
- * RowNumber -> Number of the row that will be displayed. The RowNumber is in the range [0, 7].
+ * NRows -> Total number of rows.
+ * RowNumber -> Number of the row that will be displayed. The RowNumber is in the range [0, NRows-1].
  */
-display_board_helper([], _) :- !.
-display_board_helper([Curr_Row|Rest], RowN) :-
+display_board_helper([], _, _) :- !.
+display_board_helper([CurrRow|Rest], NRows, RowN) :-
     RowN >= 0,
-    RowN < 8,
-    display_row(Curr_Row, RowN), 
+    RowN < NRows,
+    length(CurrRow, NCols),
+    display_row(CurrRow, [NRows, NCols], RowN), 
     NextRow is RowN + 1,
-    display_board_helper(Rest, NextRow).
+    display_board_helper(Rest, NRows, NextRow).
 
 /**
  * Display Row
- * display_row(+Row, +RowNumber)
+ * display_row(+Row, +Dimensions, +RowNumber)
  * Display a row of the board. A row is composed by the content and the divisions around it.
- * The first row also displays the column identifiers, from 'a' to 'h'.
+ * The first row also displays the column identifiers, starting from 'a'.
  * 
  * Row -> List with a representation of a board row.
- * RowNumber -> Number of the row that will be displayed. The RowNumber is in the range [0, 7].
+ * Dimensions -> Board dimensions.
+ * RowNumber -> Number of the row that will be displayed.
  */
-display_row(Row, 0) :-
-    write('  '), display_col_head(0), nl,
-    write('  '), display_top(0), nl,
-    display_row_content(Row, 0),    
-    write('  '), display_div(0), nl.
+display_row(Row, [NRows, NCols], 0) :-
+    write('  '), display_col_head(NCols, 0), nl,
+    write('  '), display_top(NCols, 0), nl,
+    display_row_content(Row, [NRows, NCols], 0),    
+    write('  '), display_div(NCols, 0), nl, !.
 
-display_row(Row, 7) :-
-    display_row_content(Row, 7),
-    write('  '), display_bottom(0), nl.
+display_row(Row, [NRows, NCols], RowN) :-
+    RowN is NRows-1,
+    display_row_content(Row, [NRows, NCols], RowN),
+    write('  '), display_bottom(NCols, 0), nl, !.
 
-display_row(Row, RowN) :-
+display_row(Row, [NRows, NCols], RowN) :-
     RowN > 0,   
-    RowN < 7,
-    display_row_content(Row, RowN),
-    write('  '), display_div(0), nl.
+    RowN < NRows-1,
+    display_row_content(Row, [NRows, NCols], RowN),
+    write('  '), display_div(NCols, 0), nl.
 
 /** 
  * Display Row Content
- * display_row_content(+Row, +RowNumber)
+ * display_row_content(+Row, +Dimensions, +RowNumber)
  * Display the content of a row in the board, spanning 5 lines.
  * In each third line, the row identifier is also displayed
  * 
  * Row -> List with a representation of a board row.
- * RowNumber -> Number of the row that will be displayed. The RowNumber is in range [0, 7].
+ * Dimensions -> Board dimensions.
+ * RowNumber -> Number of the row that will be displayed.
  */
-display_row_content(Row, RowNumber) :-
-    write('  '), display_content_row_1(Row, RowNumber, 0), nl,
-    write('  '), display_content_row_2(Row, RowNumber, 0), nl,
-    ID is 97+RowNumber, ansi_format([fg(blue)], '~c', [ID]), write(' '), display_content_row_3(Row, RowNumber, 0), nl,
-    write('  '), display_content_row_4(Row, RowNumber, 0), nl,
-    write('  '), display_content_row_5(Row, RowNumber, 0), nl.
+display_row_content(Row, [NRows, NCols], RowNumber) :-
+    LastRow is NRows-1,
+    LastCol is NCols-1,
+    write('  '), display_content_row_1(Row, [LastRow, LastCol], RowNumber, 0), nl,
+    write('  '), display_content_row_2(Row, [LastRow, LastCol], RowNumber, 0), nl,
+    ID is 97+RowNumber, ansi_format([fg(blue)], '~c', [ID]), write(' '), display_content_row_3(Row, [LastRow, LastCol], RowNumber, 0), nl,
+    write('  '), display_content_row_4(Row, [LastRow, LastCol], RowNumber, 0), nl,
+    write('  '), display_content_row_5(Row, [LastRow, LastCol], RowNumber, 0), nl.
 
 
 
 /**
  * Display Content Row 1
- * display_content_row_1(+Row, +RowNumber, +ColumnNumber)
+ * display_content_row_1(+Row, +Dimensions, +RowNumber, +ColumnNumber)
  * Display the first line of the content of a row, iterating over its columns.
  * It displays the first line of the frogs, empty space or the middle separators.
  *
  * Row -> List representing a board row.
- * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
- * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
+ * Dimensions -> Board dimensions [LastRow, LastCol].
+ * RowNumber -> Number of the row to be displayed, in the range [0,LastRow]. Used to determine if row is at an edge of the board.
+ * ColumnNumber -> Number of the column to be displayed, in the range [0,LastCol].
  */
-display_content_row_1([], _, _) :- !.
+display_content_row_1([], _, _, _) :- !.
 
-display_content_row_1([Content|Rest], RowNumber, 0) :-    
+display_content_row_1([Content|Rest], Dimensions, RowNumber, 0) :-    
     put_code(186), % ║ 
-    display_content_ascii_1(Content, RowNumber, 0),
+    display_content_ascii_1(Content, Dimensions, RowNumber, 0),
     put_code(186), % ║
-    display_content_row_1(Rest, RowNumber, 1).
+    display_content_row_1(Rest, Dimensions, RowNumber, 1).
 
-
-display_content_row_1([Content|Rest], RowNumber, ColN) :-
+display_content_row_1([Content|Rest], [LastRow, LastCol], RowNumber, ColN) :-
     ColN > 0,
-    ColN < 8,
-    display_content_ascii_1(Content, RowNumber, ColN),
+    ColN =< LastCol,
+    display_content_ascii_1(Content, [LastRow, LastCol], RowNumber, ColN),
     put_code(186), % ║ 
     NextCol is ColN + 1,
-    display_content_row_1(Rest, RowNumber, NextCol).
+    display_content_row_1(Rest, [LastRow, LastCol], RowNumber, NextCol).
 
 
 /**
  * Display Content Row 2
- * display_content_row_2(+Row, +RowNumber, +ColumnNumber)
+ * display_content_row_2(+Row, +Dimensions, +RowNumber, +ColumnNumber)
  * Display the second line of the content of a row, iterating over its columns.
  * It displays the second line of the frogs, empty space or the middle separators.
  *
  * Row -> List representing a board row.
- * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
- * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
+ * Dimensions -> Board dimensions [LastRow, LastCol].
+ * RowNumber -> Number of the row to be displayed, in the range [0,LastRow]. Used to determine if row is at an edge of the board.
+ * ColumnNumber -> Number of the column to be displayed, in the range [0,LastCol].
  */
-display_content_row_2([], _, _) :- !.
+display_content_row_2([], _, _, _) :- !.
 
-display_content_row_2([Content|Rest], RowNumber, 0) :-    
+display_content_row_2([Content|Rest], Dimensions, RowNumber, 0) :-    
     put_code(186), % ║ 
-    display_content_ascii_2(Content, RowNumber, 0),
+    display_content_ascii_2(Content, Dimensions, RowNumber, 0),
     put_code(186), % ║ 
-    display_content_row_2(Rest, RowNumber, 1).
+    display_content_row_2(Rest, Dimensions, RowNumber, 1).
 
 
-display_content_row_2([Content|Rest], RowNumber, ColN) :-
+display_content_row_2([Content|Rest], [LastRow, LastCol], RowNumber, ColN) :-
     ColN > 0,
-    ColN < 8,
-    display_content_ascii_2(Content, RowNumber, ColN),
+    ColN =< LastCol,
+    display_content_ascii_2(Content, [LastRow, LastCol], RowNumber, ColN),
     put_code(186), % ║ 
     NextCol is ColN + 1,
-    display_content_row_2(Rest, RowNumber, NextCol).
+    display_content_row_2(Rest, [LastRow, LastCol], RowNumber, NextCol).
 
 
 /**
  * Display Content Row 3
- * display_content_row_3(+Row, +RowNumber, +ColumnNumber)
+ * display_content_row_3(+Row, +Dimensions, +RowNumber, +ColumnNumber)
  * Display the third line of the content of a row, iterating over its columns.
  * It displays the third line of the frogs, empty space or the separators.
  *
  * Row -> List representing a board row.
- * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
- * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
+ * Dimensions -> Board dimensions [LastRow, LastCol].
+ * RowNumber -> Number of the row to be displayed, in the range [0,LastRow]. Used to determine if row is at an edge of the board.
+ * ColumnNumber -> Number of the column to be displayed, in the range [0,LastCol].
  */
-display_content_row_3([], _, _) :- !.
+display_content_row_3([], _, _, _) :- !.
 
-display_content_row_3([Content|Rest], RowNumber, 0) :-    
+display_content_row_3([Content|Rest], Dimensions, RowNumber, 0) :-    
     put_code(186), % ║ 
-    display_content_ascii_3(Content, RowNumber, 0),
+    display_content_ascii_3(Content, Dimensions, RowNumber, 0),
     put_code(186), % ║ 
-    display_content_row_3(Rest, RowNumber, 1).
+    display_content_row_3(Rest, Dimensions, RowNumber, 1).
 
 
-display_content_row_3([Content|Rest], RowNumber, ColN) :-
+display_content_row_3([Content|Rest], [LastRow, LastCol], RowNumber, ColN) :-
     ColN > 0,
-    ColN < 8,
-    display_content_ascii_3(Content, RowNumber, ColN),
+    ColN =< LastCol,
+    display_content_ascii_3(Content, [LastRow, LastCol], RowNumber, ColN),
     put_code(186), % ║ 
     NextCol is ColN + 1,
-    display_content_row_3(Rest, RowNumber, NextCol).
+    display_content_row_3(Rest, [LastRow, LastCol], RowNumber, NextCol).
 
 
 /**
  * Display Content Row 4
- * display_content_row_4(+Row, +RowNumber, +ColumnNumber)
+ * display_content_row_4(+Row, +Dimensions, +RowNumber, +ColumnNumber)
  * Display the fourth line of the content of a row, iterating over its columns.
  * It displays the fourth line of the frogs, empty space or the separators.
  *
  * Row -> List representing a board row.
- * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
- * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
+ * Dimensions -> Board dimensions [LastRow, LastCol].
+ * RowNumber -> Number of the row to be displayed, in the range [0,LastRow]. Used to determine if row is at an edge of the board.
+ * ColumnNumber -> Number of the column to be displayed, in the range [0,LastCol].
  */
-display_content_row_4([], _, _) :- !.
+display_content_row_4([], _, _, _) :- !.
 
-display_content_row_4([Content|Rest], RowNumber, 0) :-    
+display_content_row_4([Content|Rest], Dimensions, RowNumber, 0) :-    
     put_code(186), % ║ 
-    display_content_ascii_4(Content, RowNumber, 0),
+    display_content_ascii_4(Content, Dimensions, RowNumber, 0),
     put_code(186), % ║ 
-    display_content_row_4(Rest, RowNumber, 1).
+    display_content_row_4(Rest, Dimensions, RowNumber, 1).
 
-display_content_row_4([Content|Rest], RowNumber, ColN) :-
+display_content_row_4([Content|Rest], [LastRow, LastCol], RowNumber, ColN) :-
     ColN > 0,
-    ColN < 8,
-    display_content_ascii_4(Content, RowNumber, ColN),
+    ColN =< LastCol,
+    display_content_ascii_4(Content, [LastRow, LastCol], RowNumber, ColN),
     put_code(186), % ║ 
     NextCol is ColN + 1,
-    display_content_row_4(Rest, RowNumber, NextCol).
+    display_content_row_4(Rest, [LastRow, LastCol], RowNumber, NextCol).
 
 
 /**
  * Display Content Row 5
- * display_content_row_5(+Row, +RowNumber, +ColumnNumber)
+ * display_content_row_5(+Row, +Dimensions, +RowNumber, +ColumnNumber)
  * Display the fifth line of the content of a row, iterating over its columns.
  * It displays the fifth line of the frogs, empty space or the separators.
  *
  * Row -> List representing a board row.
- * RowNumber -> Number of the row to be displayed, in the range [0,7]. Used to determine if row is at an edge of the board.
- * ColumnNumber -> Number of the column to be displayed, in the range [0,7].
+ * Dimensions -> Board dimensions [LastRow, LastCol].
+ * RowNumber -> Number of the row to be displayed, in the range [0,LastRow]. Used to determine if row is at an edge of the board.
+ * ColumnNumber -> Number of the column to be displayed, in the range [0,LastCol].
  */
-display_content_row_5([], _, _) :- !.
+display_content_row_5([], _, _, _) :- !.
 
-display_content_row_5([Content|Rest], RowNumber, 0) :-    
+display_content_row_5([Content|Rest], Dimensions, RowNumber, 0) :-    
     put_code(186), % ║ 
-    display_content_ascii_5(Content, RowNumber, 0),
+    display_content_ascii_5(Content, Dimensions, RowNumber, 0),
     put_code(186), % ║ 
-    display_content_row_5(Rest, RowNumber, 1).
+    display_content_row_5(Rest, Dimensions, RowNumber, 1).
 
-display_content_row_5([Content|Rest], RowNumber, ColN) :-
+display_content_row_5([Content|Rest], [LastRow, LastCol], RowNumber, ColN) :-
     ColN > 0,
-    ColN < 8,
-    display_content_ascii_5(Content, RowNumber, ColN),
+    ColN =< LastCol,
+    display_content_ascii_5(Content, [LastRow, LastCol], RowNumber, ColN),
     put_code(186), % ║ 
     NextCol is ColN + 1,
-    display_content_row_5(Rest, RowNumber, NextCol).
+    display_content_row_5(Rest, [LastRow, LastCol], RowNumber, NextCol).
 
 /**
  * Display Column Header
- * display_col_head(+ColumnNumber)
- * Displays the identifier of a column, iterating from column 0 to 7.
+ * display_col_head(+NCols, +ColumnNumber)
+ * Displays the identifier of a column, iterating from column 0 to NCols-1.
  * 
+ * NCols -> Total number of columns.
  * ColN -> Number of the column.
  */
-display_col_head(7) :-
+display_col_head(NCols, ColN) :-
+    ColN is NCols-1,
     write('        '),
-    ansi_format([fg(blue)], '~w', [8]),
+    ansi_format([fg(blue)], '~w', [ColN]),
     write('       '), !.
 
-display_col_head(ColN) :-
+display_col_head(NCols, ColN) :-
     ColN >= 0,
-    ColN < 7,
+    ColN < NCols-1,
     N is ColN+1,
     write('        '),
     ansi_format([fg(blue)], '~w', [N]),
     write('       '),
     NextCol is ColN + 1,
-    display_col_head(NextCol).
+    display_col_head(NCols, NextCol).
 
 
 /**
  * Display Top of the Board
- * display_top(+ColumnNumber)
+ * display_top(+NCols, +ColumnNumber)
  * Displays the top edge of the board.
  *
+ * NCols -> Number of columns in the board.
  * ColumnNumber -> Number of the column. Used to iterate through the row.
  */
-display_top(0) :-
+display_top(NCols, 0) :-
     put_code(201), %╔
     display_div_line(15),
     put_code(203), % ╦
-    display_top(1).
+    display_top(NCols, 1), !.
 
-display_top(7) :-
+display_top(NCols, ColN) :-
+    ColN is NCols-1,
     display_div_line(15),
     put_code(187), !. % ╗
 
-display_top(ColN) :-
+display_top(NCols, ColN) :-
     ColN > 0,
-    ColN < 7,
+    ColN < NCols-1,
     display_div_line(15),
     put_code(203), % ╦
     NextCol is ColN + 1,
-    display_top(NextCol).
+    display_top(NCols, NextCol).
 
 
 /**
  * Display Bottom of the Board
- * display_bottom(+ColumnNumber)
+ * display_bottom(+NCols, +ColumnNumber)
  * Displays the bottom edge of the board.
  *
+ * NCols -> Number of columns in the board.
  * ColumnNumber -> Number of the column. Used to iterate through the row.
  */
-display_bottom(0) :-
+display_bottom(NCols, 0) :-
     put_code(200), %╚
     display_div_line(15),
     put_code(202), % ╩
-    display_bottom(1).
+    display_bottom(NCols, 1), !.
 
-display_bottom(7) :-
+display_bottom(NCols, ColN) :-
+    ColN is NCols-1,
     display_div_line(15),
     put_code(188), !. %╝
 
-display_bottom(ColN) :-
+display_bottom(NCols, ColN) :-
     ColN > 0,
-    ColN < 7,
+    ColN < NCols-1,
     display_div_line(15),
     put_code(202), % ╩
     NextCol is ColN + 1,
-    display_bottom(NextCol).
+    display_bottom(NCols, NextCol).
 
 
 /**
  * Display Division of the Board
- * display_div(+ColumnNumber)
+ * display_div(+NCols, +ColumnNumber)
  * Displays a division inside the board, separating rows.
  *
+ * NCols -> Number of columns in the board.
  * ColumnNumber -> Number of the column. Used to iterate through the row.
  */
-display_div(0) :-
+display_div(NCols, 0) :-
     put_code(204), % ╠
     display_div_line(15),
     put_code(206), % ╬
-    display_div(1).
+    display_div(NCols, 1).
 
-display_div(7) :-
+display_div(NCols, ColN) :-
+    ColN is NCols-1,
     display_div_line(15),
     put_code(185), !. % ╣ 
 
-display_div(ColN) :-
+display_div(NCols, ColN) :-
     ColN > 0,
-    ColN < 7,
+    ColN < NCols-1,
     display_div_line(15),
     put_code(206), % ╬
     NextCol is ColN + 1,
-    display_div(NextCol).
+    display_div(NCols, NextCol).
 
 /**
  * Display Division Line
@@ -420,24 +441,24 @@ display_div_line(Count) :-
  * RowNumber -> Row of the current cell.
  * ColumnNumber -> Column of the current cell.
  */
-display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_1(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content \= empty,
-    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    (RowNumber = 0; RowNumber = LastRow; ColumnNumber = 0 ; ColumnNumber = LastCol),
     display_frog_ascii_1(Content, blue), !.
 
-display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_1(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content \= empty,
-    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    (RowNumber > 0; RowNumber < LastRow; ColumnNumber > 0 ; ColumnNumber < LastCol),
     display_frog_ascii_1(Content, default), !.
 
-display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_1(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content = empty,
-    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    (RowNumber = 0; RowNumber = LastRow; ColumnNumber = 0 ; ColumnNumber = LastCol),
     display_flower_ascii_1, !.
 
-display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_1(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content = empty,
-    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    (RowNumber > 0; RowNumber < LastRow; ColumnNumber > 0 ; ColumnNumber < LastCol),
     display_empty_line, !.
 
 /**
@@ -450,24 +471,24 @@ display_content_ascii_1(Content, RowNumber, ColumnNumber) :-
  * RowNumber -> Row of the current cell.
  * ColumnNumber -> Column of the current cell.
  */
-display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_2(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content \= empty,
-    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    (RowNumber = 0; RowNumber = LastRow; ColumnNumber = 0 ; ColumnNumber = LastCol),
     display_frog_ascii_2(Content, blue), !.
 
-display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_2(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content \= empty,
-    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    (RowNumber > 0; RowNumber < LastRow; ColumnNumber > 0 ; ColumnNumber < LastCol),
     display_frog_ascii_2(Content, default), !.
 
-display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_2(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content = empty,
-    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    (RowNumber = 0; RowNumber = LastRow; ColumnNumber = 0 ; ColumnNumber = LastCol),
     display_flower_ascii_2, !.
 
-display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_2(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content = empty,
-    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    (RowNumber > 0; RowNumber < LastRow; ColumnNumber > 0 ; ColumnNumber < LastCol),
     display_empty_line, !.
 
 /**
@@ -480,24 +501,24 @@ display_content_ascii_2(Content, RowNumber, ColumnNumber) :-
  * RowNumber -> Row of the current cell.
  * ColumnNumber -> Column of the current cell.
  */
-display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_3(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content \= empty,
-    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    (RowNumber = 0; RowNumber = LastRow; ColumnNumber = 0 ; ColumnNumber = LastCol),
     display_frog_ascii_3(Content, blue), !.
     
-display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_3(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content \= empty,
-    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    (RowNumber > 0; RowNumber < LastRow; ColumnNumber > 0 ; ColumnNumber < LastCol),
     display_frog_ascii_3(Content, default), !.
 
-display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_3(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content = empty,
-    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    (RowNumber = 0; RowNumber = LastRow; ColumnNumber = 0 ; ColumnNumber = LastCol),
     display_flower_ascii_3, !.
 
-display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_3(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content = empty,
-    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    (RowNumber > 0; RowNumber < LastRow; ColumnNumber > 0 ; ColumnNumber < LastCol),
     display_empty_line, !.
 
 /**
@@ -510,24 +531,24 @@ display_content_ascii_3(Content, RowNumber, ColumnNumber) :-
  * RowNumber -> Row of the current cell.
  * ColumnNumber -> Column of the current cell.
  */
-display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_4(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content \= empty,
-    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    (RowNumber = 0; RowNumber = LastRow; ColumnNumber = 0 ; ColumnNumber = LastCol),
     display_frog_ascii_4(Content, blue), !.
     
-display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_4(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content \= empty,
-    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    (RowNumber > 0; RowNumber < LastRow; ColumnNumber > 0 ; ColumnNumber < LastCol),
     display_frog_ascii_4(Content, default), !.
 
-display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_4(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content = empty,
-    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    (RowNumber = 0; RowNumber = LastRow; ColumnNumber = 0 ; ColumnNumber = LastCol),
     display_flower_ascii_4, !.
 
-display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_4(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content = empty,
-    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    (RowNumber > 0; RowNumber < LastRow; ColumnNumber > 0 ; ColumnNumber < LastCol),
     display_empty_line, !.
 
 /**
@@ -540,24 +561,24 @@ display_content_ascii_4(Content, RowNumber, ColumnNumber) :-
  * RowNumber -> Row of the current cell.
  * ColumnNumber -> Column of the current cell.
  */
-display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_5(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content \= empty,
-    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    (RowNumber = 0; RowNumber = LastRow; ColumnNumber = 0 ; ColumnNumber = LastCol),
     display_frog_ascii_5(Content, blue), !.
     
-display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_5(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content \= empty,
-    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    (RowNumber > 0; RowNumber < LastRow; ColumnNumber > 0 ; ColumnNumber < LastCol),
     display_frog_ascii_5(Content, default), !.
 
-display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_5(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content = empty,
-    (RowNumber = 0; RowNumber = 7; ColumnNumber = 0 ; ColumnNumber = 7),
+    (RowNumber = 0; RowNumber = LastRow; ColumnNumber = 0 ; ColumnNumber = LastCol),
     display_flower_ascii_5, !.
 
-display_content_ascii_5(Content, RowNumber, ColumnNumber) :-
+display_content_ascii_5(Content, [LastRow, LastCol], RowNumber, ColumnNumber) :-
     Content = empty,
-    (RowNumber > 0; RowNumber < 7; ColumnNumber > 0 ; ColumnNumber < 7),
+    (RowNumber > 0; RowNumber < LastRow; ColumnNumber > 0 ; ColumnNumber < LastCol),
     display_empty_line, !.
 
 /**

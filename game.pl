@@ -130,7 +130,12 @@ init_board(FirstPlayer, TypeOfGame, B) :-
  * NewBoard -> Board filled with frogs
  * TypeOfGame -> Indicates the type of game (0 - player vs player; 1 - player vs cpu; 2 - cpu vs cpu)
  */
-fill_board(Board, _, 36, Board, _) :-
+fill_board(Board, _, FrogCount, Board, _) :-
+    [FirstRow | _] = Board,
+    length(Board, NRows),
+    length(FirstRow, NCols),
+    FrogCount is NCols*NRows,
+
     display_board(Board), !,
     nl, ansi_format([fg(blue)], 'STARTING THE GAME', []), nl, wait_for_input, nl.
 
@@ -165,7 +170,7 @@ fill_board(Board, Player, Frog, NewBoard, TypeOfGame) :-
 player_fill_choose(Board, Pos) :- 
     repeat,
         (
-            read_position('Frog Position? ', Pos),
+            read_position(Board, 'Frog Position? ', Pos),
             get_position(Board, Pos, empty),
             valid_fill_position(Board, Pos),
             !;
@@ -290,7 +295,7 @@ jump(InBoard, StartPos, MidPos, EndPos, Frog, OutBoard) :-
 read_end_position(Board, InitPos, MidPos, EndPos) :-
     
     (
-        read_position('Position to jump? ', EndPos),
+        read_position(Board, 'Position to jump? ', EndPos),
         get_position(Board, EndPos, empty),
         valid_jump(Board, InitPos, ValidPos),
         ValidPos = EndPos, 
@@ -325,7 +330,7 @@ read_jump_positions(Board, Player, InitPos, MidPos, EndPos, Frog) :-
     % starting position
     repeat,
         (
-            read_position('Frog to jump? ', InitPos), 
+            read_position(Board, 'Frog to jump? ', InitPos), 
             get_position(Board, InitPos, Frog),
             player_frog(Player, Frog),
             frog_can_jump(Board, InitPos),
@@ -346,7 +351,10 @@ read_jump_positions(Board, Player, InitPos, MidPos, EndPos, Frog) :-
  * Player -> Player in question.
  * Pos -> Position currently checking.
  */
-jumpable_frog_in_row(_, _, [_,8]) :- !, fail.
+jumpable_frog_in_row([FirstRow | _], _, [_, LastCol]) :- 
+    length(FirstRow, NCols),
+    LastCol is NCols-1,
+    !, fail.
 
 jumpable_frog_in_row(Board, Player, Pos) :-
     player_frog(Player, Frog),
@@ -369,7 +377,9 @@ jumpable_frog_in_row(Board, Player, [RowI, ColI]) :-
  * Player -> Player in question.
  * RowI -> Index of current row.
  */
-find_jumpable_frog(_, _, 8) :- !, fail.
+find_jumpable_frog(Board, _, L) :- 
+    length(Board, L),
+    !, fail.
 
 find_jumpable_frog(Board, Player, RowI) :-
     jumpable_frog_in_row(Board, Player, [RowI, 0]), !.
@@ -624,4 +634,3 @@ play_game_mode(1) :-
     valid_position(Pos),*/
 
 %TODO ACABAR
-    
