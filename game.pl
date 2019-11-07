@@ -167,6 +167,7 @@ fill_board(Board, Player, Frog, NewBoard, TypeOfGame) :-
     ),
     cpu_choose(Board, Pos),
     display_cpu_fill_turn(Player, Pos),
+    wait_for_input,
     player_frog(Player, Value),
     set_position(Board, Pos, Value, IntBoard),
     next_player(Player, NextPlayer),
@@ -689,9 +690,14 @@ player_vs_player :-
     display_winner(Winner).
 
 
-player_vs_computer :-
+player_vs_cpu :-
     random_between(1, 2, FirstPlayer),
     init_board(InitialBoard, FirstPlayer, 1).
+
+cpu_vs_cpu :-
+    random_between(1, 2, FirstPlayer),
+    init_board(InitialBoard, FirstPlayer, 2), 
+    display_board(InitialBoard).
 
 play_game :-
     display_game_name,
@@ -719,7 +725,10 @@ play_game_mode(0) :-
     player_vs_player.
     
 play_game_mode(1) :-
-    player_vs_computer.
+    player_vs_cpu.
+
+play_game_mode(2) :-
+    cpu_vs_cpu.
 
 %%%%%%%%%%%%%%%%%%%%
 %                  %
