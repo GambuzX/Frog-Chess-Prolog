@@ -65,7 +65,7 @@ read_single_char(Char) :-
     name(Char, [Ch]).
 
 /**
- * Read single integer
+ * Read single integer 
  * read_single_integer(-Int)
  * Reads a single integer value from the user, not waiting for newline.
  * 
@@ -79,32 +79,34 @@ read_single_integer(Int) :-
 
 /**
  * Read column
- * read_col(-Col)
- * Reads a column from the user, that is, an integer from 1 to 8.
+ * read_col(+MaxCol, -Col)
+ * Reads a column from the user, that is, an integer from 1 to MaxCol.
  * Does not wait for newline.
  * 
+ * MaxCol -> Number of max valid column.
  * Col -> Variable to return read value.
  */
-read_col(Col) :-
+read_col(MaxCol, Col) :-
     read_single_integer(Col),
     Col >= 1,
-    Col =< 8.
+    Col =< MaxCol.
 
 /**
  * Read row
- * read_row(-Row)
- * Reads a row from the user, that is, a char from a to h.
+ * read_row(+MaxRow, -Row)
+ * Reads a row from the user, that is, a char from a to MaxRow.
  * Does not wait for newline.
  * 
+ * MaxRow -> Max valid row.
  * Row -> Variable to return read value.
  */
-read_row(Row) :-
+read_row(MaxRow, Row) :-
     read_single_char(RowChar),
     char_type(RowChar, alpha),
     downcase_atom(RowChar, Row),
     char_code(Row, Code),
     Code >= 97,
-    Code =< 104.
+    Code =< 97+MaxRow-1.
     
 
 /**
@@ -155,20 +157,26 @@ index_to_col(Index, Col) :- Col is Index+1.
 
 /**
  * Read position
- * read_position(+PrefixText, -Position)
+ * read_position(+Board, +PrefixText, -Position)
  * Reads a position from the user, that is, a row and a column.
  * Prefixes a message specified by PrefixText.
  * 
+ * Board -> Game board.
  * PrefixText -> message to be prefixed.
  * Position -> Variable to return read position.
  */
-read_position(PrefixText, [Row, Col]) :-
+read_position(Board, PrefixText, [Row, Col]) :-
+
+    [FirstRow | _] = Board,
+    length(Board, NRows),
+    length(FirstRow, NCols),
+
     write(PrefixText),
     write('('),
-    read_row(RowInp),
+    read_row(NRows, RowInp),
     write(RowInp),
     put_char(','),
-    read_col(ColInp),
+    read_col(NCols, ColInp),
     write(ColInp),
     put_char(')'),
     nl,
@@ -220,3 +228,41 @@ read_game_mode(Mode) :-
     Mode >= 1,
     Mode =< 3,
     write(Mode).
+
+/**
+ * Reads the game dimensions 
+ * read_game_dimensions(-Rows, -Columns)
+ * Both dimensions must be between 3 and 15.
+ * 3x3 board is not allowed.
+ *
+ * Rows -> Number of rows in the board
+ * Columns -> Number of columns in the board
+ */
+read_game_dimensions(Rows, Columns) :-
+    write('Number of rows: '),
+    read_integer(Rows),
+    (
+        Rows >= 3, !;
+        write('Must have at least 3 rows.'), nl, fail
+    ),
+    (
+        Rows =< 9, !;
+        write('Max rows allowed is 15.'), nl, fail
+    ),
+
+    write('Number of columns: '),
+    read_integer(Columns),
+    (
+        Columns >= 3, !;
+        write('Must have at least 3 columns.'), nl, fail
+    ),
+    (
+        Columns =< 9, !;
+        write('Max columns allowed is 15.'), nl, fail
+    ),
+
+    (
+        Rows = 3, Columns = 3, write('Board can\'t be 3x3'), nl, !, fail;
+        !
+    ),
+    nl.

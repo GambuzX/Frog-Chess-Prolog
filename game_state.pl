@@ -29,6 +29,17 @@ initialBoard([
     [empty, empty, empty, empty, empty, empty, empty, empty]
 ]).
 
+
+smallerBoard([
+    [empty, empty, empty, empty, empty, empty, empty],
+    [empty, blue, yellow, yellow, blue, blue, empty],
+    [empty, blue, blue, blue, yellow, yellow, empty],
+    [empty, blue, blue, yellow, blue, yellow, empty],
+    [empty, blue, blue, yellow, blue, yellow, empty],
+    [empty, yellow, yellow, blue, yellow, blue, empty],
+    [empty, empty, empty, empty, empty, empty, empty]
+]).
+
 /*
     The game is still going on, any player can jump.
 */
