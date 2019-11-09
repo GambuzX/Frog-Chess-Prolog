@@ -556,11 +556,8 @@ player_turn(InBoard, Player, OutBoard) :-
 
 cpu_turn(InBoard, Player, OutBoard) :-
     player_frog(Player, Frog),
-    write('before generate_move'), wait_for_input, nl,
     generate_move(InBoard, Frog, Move), !,
-    write('after generate_move'), wait_for_input, nl,
-    write('Move: '), print_list(Move),
-    wait_for_input,
+    %write('Move: '), print_list(Move),
     write('CPU move'), nl, wait_for_input,
     execute_move(InBoard, Frog, Move, OutBoard), !.
 
@@ -598,9 +595,7 @@ pvc_game(InBoard, 1, Winner) :- %Player 1 is the human
 
 pvc_game(InBoard, 2, Winner) :- %Player 2 is the cpu
     display_game(InBoard, 2, 0),
-    write('before cpu turn'), wait_for_input, nl,
     cpu_turn(InBoard, 2, MidBoard),
-    write('after cpu turn'), wait_for_input, nl,
     remove_outer_frogs(MidBoard, FinalBoard),
     (
         game_over(FinalBoard, 2, Winner),
@@ -685,10 +680,8 @@ play_game_mode(2) :-
  */
 generate_move(Board, Frog, Move) :-
     bagof(Pos, (valid_position(Board, Pos), get_position(Board, Pos, Frog)), FrogList), !,%Get the list of frogs
-    write('before generate_jumps'), wait_for_input, nl,
     generate_jumps(Board, FrogList, PossibleMoves), !,
-    write('after generate_jumps'), wait_for_input, nl,
-    print_move_list(PossibleMoves), wait_for_input,
+    %write('move list'), nl, print_move_list(PossibleMoves), wait_for_input,
     sort(0, @>=, PossibleMoves, [Move|_]).
 
 /**
@@ -704,18 +697,11 @@ generate_move(Board, Frog, Move) :-
 generate_jumps(_, [], []) :- !.
 
 generate_jumps(Board, [CurrFrogPos | Rest], JumpList) :-
-    write('before get_jumps'), wait_for_input, nl,
     get_jumps(Board, [CurrFrogPos], CurrFrogJumps),
-    print_move_list(CurrFrogJumps), nl,
-    write('after get_jumps'), wait_for_input, nl,
-
-    write('before generate_jumps callback'), wait_for_input, nl,
-    generate_jumps(Board, Rest, RestFrogsJumps), !,
-    print_move_list(RestFrogsJumps), nl,
-    write('after generate_jumps callback'), wait_for_input, nl,
+    generate_jumps(Board, Rest, RestFrogsJumps),
     append(CurrFrogJumps, RestFrogsJumps, JumpList).
 
-prepend_val_to_lists(_, [], []).
+prepend_val_to_lists(_, [], []) :- !.
 prepend_val_to_lists(NewValue, [[FirstListEle | RestList] | OtherLists], [[NewValue, FirstListEle | RestList] | NewLists]) :-
     prepend_val_to_lists(NewValue, OtherLists, NewLists).
 
@@ -732,7 +718,7 @@ get_jumps(Board, PrevJumps, JumpList) :-
         keep_jumping(Board, PrevJumps, NewJumps, JumpList)
     ), !.
 
-keep_jumping(_, _, [], []).
+keep_jumping(_, _, [], []) :- !.
 keep_jumping(InBoard, PrevJumps, [CurrDest | Rest], [NewJumpSequence | JumpList]) :-
     % determine sequence of jumps until this one
     append(PrevJumps, [CurrDest], NewJumpSequence),
@@ -763,12 +749,13 @@ keep_jumping(InBoard, PrevJumps, [CurrDest | Rest], [NewJumpSequence | JumpList]
  * PositionsList -> List of all the positions of a cpu move
  * OutputBoard -> Final Board
  */
-execute_move(Board, _, [_ | []], Board) :- !. %If there is only one position, there are no more jumps
+execute_move(Board, _, [_ | []], Board) :- !. % If there is only one position, there are no more jumps
 
 execute_move(InBoard, Frog, [StartPos, EndPos| OtherPos], OutBoard) :-
     middle_position(StartPos, EndPos, MidPos),
     jump(InBoard, StartPos, MidPos, EndPos, Frog, NewBoard),
     display_board(NewBoard),
+    %write message to inform about the jump here
     wait_for_input,
     execute_move(NewBoard, Frog, [EndPos| OtherPos], OutBoard).
 
