@@ -698,18 +698,15 @@ generate_jumps(Board, Frog, [FirstPos|OtherPos], JumpList) :-
     write('generate_jumps'), nl, wait_for_input,
     write('FirstPos: '), print_position(FirstPos), nl,
     get_jumps(Board, Frog, FirstPos, Jumps), 
-    appendFirstPosToLists(FirstPos, Jumps, NewJumps),
+    prepend_val_to_lists(FirstPos, Jumps, NewJumps),
     write('generate_jumps Jumps: '), print_list(NewJumps), nl, wait_for_input,
     generate_jumps(Board, Frog, OtherPos, NewJumpList), !,
     write('generate_jumps NewJumpList: '), print_list(NewJumpList), nl, wait_for_input,
     append(NewJumps, NewJumpList, JumpList).
 
-appendFirstPosToLists(_, [], []).
-
-appendFirstPosToLists(FirstPos, [FirstJump|OtherJumps], NewJumps) :-
-    append([FirstPos], FirstJump, Jump), 
-    appendFirstPosToLists(FirstPos, OtherJumps, OtherJump),
-    append(Jump, OtherJump, NewJumps).
+prepend_val_to_lists(_, [], []).
+prepend_val_to_lists(NewValue, [[FirstListEle | RestList] | OtherLists], [[NewValue, FirstListEle | RestList] | NewLists]) :-
+    prepend_val_to_lists(NewValue, OtherLists, NewLists).
 
 /**
  * Get jumps
@@ -734,8 +731,8 @@ get_jumps(Board, Frog, Pos, JumpList) :-
     write('after get_jumps bagof'), nl, wait_for_input,
     (
         length(PositionList, 0), 
-        JumpList = []
-        ,write('length = 0'), nl
+        JumpList = [],
+        write('length = 0'), nl
      ;
         write('call_new_get_jumps'), nl, wait_for_input,
         call_new_get_jumps(Board, Frog, Pos, PositionList, JumpList)
