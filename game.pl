@@ -708,8 +708,8 @@ get_jumps(Board, Frog, Pos, JumpList) :-
     bagof(EndPos, valid_jump(Board, Pos, EndPos), PositionList), !,
     (
         length(PositionList, 0);
-        call_new_get_jumps(Board, Frog, Pos, PositionList, NewJumpList), !
-    ). %append de cada lista de NewJumpList ao valor de Pos
+        call_new_get_jumps(Board, Frog, Pos, PositionList, JumpList)
+    ), !. %append de cada lista de NewJumpList ao valor de Pos
 
 /**
  * Call new get jumps
