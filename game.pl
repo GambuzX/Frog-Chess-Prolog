@@ -698,7 +698,7 @@ generate_jumps(Board, Frog, [FirstPos|OtherPos], JumpList) :-
     write('generate_jumps'), nl, wait_for_input,
     write('FirstPos: '), print_position(FirstPos), nl,
     get_jumps(Board, Frog, FirstPos, Jumps), 
-    appendFirstPosToLists(FirstP
+    appendFirstPosToLists(FirstPos, Jumps, NewJumps),
     write('generate_jumps Jumps: '), print_list(NewJumps), nl, wait_for_input,
     generate_jumps(Board, Frog, OtherPos, NewJumpList), !,
     write('generate_jumps NewJumpList: '), print_list(NewJumpList), nl, wait_for_input,
