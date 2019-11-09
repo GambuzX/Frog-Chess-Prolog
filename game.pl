@@ -184,7 +184,7 @@ cpu_choose(Board, Pos) :-
 
 /**
  * Valid jump
- * valid_jump(+Board, +StartPosition, -EndPosition)
+ * valid_jump_position(+Board, +StartPosition, -EndPosition)
  * Generates all valid jumping positions from StartPosition.
  * Jumps can be horizontal, vertical or diagonal, 2 positions from the starting one.
  * 
@@ -192,42 +192,42 @@ cpu_choose(Board, Pos) :-
  * StartPosition -> Starting position.
  * EndPosition -> Ending position.
  */
-valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
+valid_jump_position(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow,
     ECol is SCol+2,
     valid_position(Board, [ERow, ECol]).
     
-valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
+valid_jump_position(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow,
     ECol is SCol-2,
     valid_position(Board, [ERow, ECol]).
     
-valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
+valid_jump_position(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow+2,
     ECol is SCol,
     valid_position(Board, [ERow, ECol]).
     
-valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
+valid_jump_position(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow-2,
     ECol is SCol,
     valid_position(Board, [ERow, ECol]).
     
-valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
+valid_jump_position(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow-2,
     ECol is SCol-2,
     valid_position(Board, [ERow, ECol]).
     
-valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
+valid_jump_position(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow+2,
     ECol is SCol-2,
     valid_position(Board, [ERow, ECol]).
     
-valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
+valid_jump_position(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow-2,
     ECol is SCol+2,
     valid_position(Board, [ERow, ECol]).
     
-valid_jump(Board, [SRow, SCol], [ERow, ECol]) :-
+valid_jump_position(Board, [SRow, SCol], [ERow, ECol]) :-
     ERow is SRow+2,
     ECol is SCol+2,
     valid_position(Board, [ERow, ECol]).
@@ -249,15 +249,17 @@ middle_position([SRow,SCol], [ERow,ECol], [MRow,MCol]) :-
 
 /**
  * Frog can jump
- * frog_can_jump(+Board, +FrogPosition)
+ * frog_can_jump(+Board, +FrogPosition, -Dest)
  * Checks if a frog in a given position can jump in any direction.
+ * Returns valid jump destinations.
  * 
  * Board -> Game board.
  * FrogPosition -> Frog position.
+ * Dest -> Jump destination.
  */
-frog_can_jump(Board, FrogPos) :-
+frog_can_jump(Board, FrogPos, Dest) :-
     % look through all valid jumps
-    valid_jump(Board, FrogPos, Dest),
+    valid_jump_position(Board, FrogPos, Dest),
 
     % check if dest is empty
     get_position(Board, Dest, empty),
@@ -299,7 +301,7 @@ read_end_position(Board, InitPos, MidPos, EndPos) :-
     (
         read_position(Board, 'Position to jump? ', EndPos),
         get_position(Board, EndPos, empty),
-        valid_jump(Board, InitPos, ValidPos),
+        valid_jump_position(Board, InitPos, ValidPos),
         ValidPos = EndPos, 
         !;
 
@@ -335,7 +337,7 @@ read_jump_positions(Board, Player, InitPos, MidPos, EndPos, Frog) :-
             read_position(Board, 'Frog to jump? ', InitPos), 
             get_position(Board, InitPos, Frog),
             player_frog(Player, Frog),
-            frog_can_jump(Board, InitPos),
+            frog_can_jump(Board, InitPos, _),
             !;
             error_msg('Invalid start position!')
         ),
@@ -361,7 +363,7 @@ jumpable_frog_in_row([FirstRow | _], _, [_, LastCol]) :-
 jumpable_frog_in_row(Board, Player, Pos) :-
     player_frog(Player, Frog),
     get_position(Board, Pos, Frog),
-    frog_can_jump(Board, Pos), !.
+    frog_can_jump(Board, Pos, _), !.
 
 jumpable_frog_in_row(Board, Player, [RowI, ColI]) :-
     NextColI is ColI+1,
@@ -489,7 +491,7 @@ remove_outer_frogs(InBoard, OutBoard) :-
  * OutBoard -> Modified board if continued jumping, initial board otherwise.
  */
 continue_jumping(InBoard, Player, FrogPos, _, OutBoard) :-
-    \+frog_can_jump(InBoard, FrogPos),
+    \+frog_can_jump(InBoard, FrogPos, _),
 
     write('Current frog can\'t jump again.'), nl,
     next_player(Player, NextPlayer),
@@ -662,14 +664,16 @@ play_game_mode(2) :-
 %                  %
 %%%%%%%%%%%%%%%%%%%%
 
+
 /**
  * Generate move
  * generate_move(+Board, +Frog, -Move)
- * Generates a list of positions of a cpu move 
+ * Generates a move for the cpu to take.
+ * A move is composed by the sequence of positions to jump to.
  *
- * Board -> Initial Board
- * Frog -> Player Frog
- * Move -> List with all the jump positions of a move
+ * Board -> Initial Board.
+ * Frog -> Player Frog.
+ * Move -> List with all the jump positions of a move.
  */
 generate_move(Board, Frog, Move) :-
     bagof(Pos, (valid_position(Board, Pos), get_position(Board, Pos, Frog)), FrogList), %Get the list of frogs
@@ -689,7 +693,10 @@ generate_move(Board, Frog, Move) :-
 generate_jumps(_, _, [], []).
 
 generate_jumps(Board, Frog, [FirstPos|OtherPos], JumpList) :-
+    %write('before get_jumps'), nl, wait_for_input,
+    %write('calling get_jumps for position '), print_position(FirstPos), nl,
     get_jumps(Board, Frog, FirstPos, Jumps), !,
+    %write('after get_jumps'), nl, wait_for_input,
     generate_jumps(Board, Frog, OtherPos, NewJumpList), !,
     append(Jumps, NewJumpList, JumpList).
 
@@ -703,13 +710,15 @@ generate_jumps(Board, Frog, [FirstPos|OtherPos], JumpList) :-
  * Pos -> Start Position of the current jump
  * JumpPositionsList -> List with all the jump positions from that start position
  */
-
 get_jumps(Board, Frog, Pos, JumpList) :-
-    bagof(EndPos, valid_jump(Board, Pos, EndPos), PositionList), !,
+    %write('before get_jumps bagof'), nl, wait_for_input,
+    bagof(EndPos, frog_can_jump(Board, Pos, EndPos), PositionList), !,
+    %print_list(PositionList), nl,
+    %write('after get_jumps bagof'), nl, wait_for_input,
     (
         length(PositionList, 0);
-        call_new_get_jumps(Board, Frog, Pos, PositionList, NewJumpList), !
-    ). %append de cada lista de NewJumpList ao valor de Pos
+        call_new_get_jumps(Board, Frog, Pos, PositionList, NewJumpList)
+    ), !. %append de cada lista de NewJumpList ao valor de Pos
 
 /**
  * Call new get jumps
@@ -751,3 +760,16 @@ execute_move(InBoard, Frog, [StartPos, EndPos| OtherPos], OutBoard) :-
     display_board(NewBoard),
     wait_for_input(),
     execute_move(NewBoard, Frog, [EndPos| OtherPos], OutBoard).
+
+
+
+/*
+DEBUG STUFF
+*/
+print_list([]) :- wait_for_input.
+print_list([Curr | Rest]) :-
+    print_position(Curr),
+    write(' - '), print_list(Rest).
+
+print_position([Row, Col]) :-
+    write('('), write(Row), write(','), write(Col), write(')').
