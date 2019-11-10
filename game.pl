@@ -559,7 +559,7 @@ player_turn(InBoard, Player, OutBoard) :-
 cpu_turn(InBoard, Player, OutBoard) :-
     choose_move(InBoard, Player, 2, Move), !,
     write('CPU move'), nl, wait_for_input,
-    player_frog(Player, Frog),
+    player_frog(Player, Frog), !,
     execute_move(InBoard, Frog, Move, true, OutBoard), !.
 
 /**
@@ -733,11 +733,31 @@ choose_move(Board, Player, 2, Move) :-
     valid_moves(Board, Player, ListOfMoves), !,
     get_best_move(Board, Player, ListOfMoves, Move), !.
 
-
+/**
+ * Get best move
+ * get_best_move(+Board, +Player, +ListOfMoves, -BestMove)
+ * Gets the best move of a list of moves
+ *
+ * Board -> Game board.
+ * Player -> Player number.
+ * ListOfMoves -> List with all the possible moves of Player
+ * BestMove -> The best move for the Player
+ */
 get_best_move(Board, Player, ListOfMoves, BestMove) :-
     get_best_move_helper(Board, Player, ListOfMoves, _, BestMove).
 
-get_best_move_helper(_, _, [], -1, []).
+/**
+ * Get best move helper
+ * get_best_move_helper(+Board, +Player, +ListOfMoves, ?Value, -BestMove)
+ * Gets the best move of a list of moves
+ *
+ * Board -> Game board.
+ * Player -> Player number.
+ * ListOfMoves -> List with all the possible moves of Player
+ * Value -> The value of the best move
+ * BestMove -> The best move for the Player
+ */
+get_best_move_helper(Board, Player, [LastMove|[]], Value, LastMove) :- value(Board, Player, Value).
 
 get_best_move_helper(Board, Player, [FirstMove|OtherMoves], BestValue, BestMove) :-
     player_frog(Player, Frog),
@@ -746,7 +766,18 @@ get_best_move_helper(Board, Player, [FirstMove|OtherMoves], BestValue, BestMove)
     get_best_move_helper(Board, Player, OtherMoves, NewBestValue, NewBestMove), !,
     choose_best_move(NewBoardValue, FirstMove, NewBestValue, NewBestMove, BestValue, BestMove), !.
 
-
+/**
+ * Choose best move
+ * choose_best_move(+FirstValue, +FirstMove, +SecondValue, +SecondMove, -BestValue, -BestMove)
+ * Chooses the best of two moves
+ *
+ * FirstValue -> The value of the first move
+ * FirstMove -> The first move
+ * SecondValue -> The value of the second move
+ * SecondMove -> The second move
+ * BestValue -> The value of the best move
+ * BestMove -> The best of the two moves
+ */
 choose_best_move(FirstValue, FirstMove, SecondValue, _, BestValue, BestMove) :-
     FirstValue > SecondValue,
     BestValue = FirstValue,
