@@ -632,7 +632,7 @@ cvc_game(InBoard, Player, Winner) :-
         display_game(FinalBoard, empty, 0);
 
         next_player(Player, NextPlayer),
-        pvc_game(FinalBoard, NextPlayer, Winner)
+        cvc_game(FinalBoard, NextPlayer, Winner)
     ), !.
 
 /**
@@ -726,12 +726,12 @@ play_game_mode(2) :-
  * Move -> List with all the jump positions of a move.
  */
 choose_move(Board, Player, 1, Move) :-
-    valid_moves(Board, Player, ListOfMoves),
-    sort(0, @>=, ListOfMoves, [Move|_]).
+    valid_moves(Board, Player, ListOfMoves), !,
+    sort(0, @>=, ListOfMoves, [Move|_]), !.
 
 choose_move(Board, Player, 2, Move) :-
-    valid_moves(Board, Player, ListOfMoves),
-    get_best_move(Board, Player, ListOfMoves, Move).
+    valid_moves(Board, Player, ListOfMoves), !,
+    get_best_move(Board, Player, ListOfMoves, Move), !.
 
 
 get_best_move(Board, Player, ListOfMoves, BestMove) :-
@@ -742,9 +742,9 @@ get_best_move_helper(_, _, [], -1, []).
 get_best_move_helper(Board, Player, [FirstMove|OtherMoves], BestValue, BestMove) :-
     player_frog(Player, Frog),
     execute_move(Board, Frog, FirstMove, false, NewBoard),
-    value(NewBoard, Player, NewBoardValue),
-    get_best_move_helper(Board, Player, OtherMoves, NewBestValue, NewBestMove),
-    choose_best_move(NewBoardValue, FirstMove, NewBestValue, NewBestMove, BestValue, BestMove).
+    value(NewBoard, Player, NewBoardValue), !,
+    get_best_move_helper(Board, Player, OtherMoves, NewBestValue, NewBestMove), !,
+    choose_best_move(NewBoardValue, FirstMove, NewBestValue, NewBestMove, BestValue, BestMove), !.
 
 
 choose_best_move(FirstValue, FirstMove, SecondValue, _, BestValue, BestMove) :-
