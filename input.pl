@@ -247,7 +247,7 @@ read_game_dimensions(Rows, Columns) :-
     ),
     (
         Rows =< 9, !;
-        write('Max rows allowed is 15.'), nl, fail
+        write('Max rows allowed is 9.'), nl, fail
     ),
 
     write('Number of columns: '),
@@ -258,7 +258,7 @@ read_game_dimensions(Rows, Columns) :-
     ),
     (
         Columns =< 9, !;
-        write('Max columns allowed is 15.'), nl, fail
+        write('Max columns allowed is 9.'), nl, fail
     ),
 
     (

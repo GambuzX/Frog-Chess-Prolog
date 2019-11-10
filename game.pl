@@ -732,6 +732,12 @@ choose_move(Board, Player, 2, Move) :-
     valid_moves(Board, Player, ListOfMoves), !,
     get_best_move(Board, Player, ListOfMoves, Move), !.
 
+choose_move(Board, Player, 3, Move) :-
+    valid_moves(Board, Player, ListOfMoves), !.
+    %percorrer lista de moves e calcular moves do player seguidos do jogador
+    %calcular value das jogadas finais e guardar a melhor
+    %escolher melhor jogada conforme o melhor valor de cada uma
+
 /**
  * Get best move
  * get_best_move(+Board, +Player, +ListOfMoves, -BestMove)
@@ -743,11 +749,11 @@ choose_move(Board, Player, 2, Move) :-
  * BestMove -> The best move for the Player
  */
 get_best_move(Board, Player, ListOfMoves, BestMove) :-
-    get_best_move_helper(Board, Player, ListOfMoves, _, BestMove).
+    get_best_move_helper(Board, Player, ListOfMoves, _, BestMove, _).
 
 /**
  * Get best move helper
- * get_best_move_helper(+Board, +Player, +ListOfMoves, ?Value, -BestMove)
+ * get_best_move_helper(+Board, +Player, +ListOfMoves, ?Value, -BestMove, ?WinnerMove)
  * Gets the best move of a list of moves
  *
  * Board -> Game board.
@@ -755,15 +761,28 @@ get_best_move(Board, Player, ListOfMoves, BestMove) :-
  * ListOfMoves -> List with all the possible moves of Player
  * Value -> The value of the best move
  * BestMove -> The best move for the Player
+ * WinnerMove -> Auxiliar variable that is used to check if some move wins the game
  */
-get_best_move_helper(Board, Player, [LastMove|[]], Value, LastMove) :- value(Board, Player, Value).
+get_best_move_helper(Board, Player, [LastMove|[]], Value, LastMove, _) :- value(Board, Player, Value).
 
-get_best_move_helper(Board, Player, [FirstMove|OtherMoves], BestValue, BestMove) :-
+get_best_move_helper(Board, Player, [FirstMove|OtherMoves], BestValue, BestMove, WinnerMove) :-
     player_frog(Player, Frog),
     execute_move(Board, Frog, FirstMove, false, NewBoard),
-    value(NewBoard, Player, NewBoardValue), !,
-    get_best_move_helper(Board, Player, OtherMoves, NewBestValue, NewBestMove), !,
-    choose_best_move(NewBoardValue, FirstMove, NewBestValue, NewBestMove, BestValue, BestMove), !.
+    (
+        game_over(NewBoard, Player, Player), %if the game ends, and the player won, this is the best move
+        BestMove = FirstMove,
+        WinnerMove = BestMove; 
+        
+        value(NewBoard, Player, NewBoardValue), !,
+        get_best_move_helper(Board, Player, OtherMoves, NewBestValue, NewBestMove, WinnerMove), !,
+        (
+            nonvar(WinnerMove), %if the get_best_move_helper returned a value, this is the best value
+            BestMove = NewBestMove;
+
+            var(WinnerMove), 
+            choose_best_move(NewBoardValue, FirstMove, NewBestValue, NewBestMove, BestValue, BestMove), !
+        )
+    ).
 
 /**
  * Choose best move
