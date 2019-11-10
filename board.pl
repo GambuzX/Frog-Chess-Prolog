@@ -1,4 +1,26 @@
 /** 
+ * Player Frog
+ * player_frog(+Number, -player_frog)
+ * Associates a frog to each player number.
+ *
+ * Number -> Number of the player. Since for now we only consider 2 players, it is either 1 or 2.
+ * player_frog -> Returns the frog associated with the player number.
+ */
+player_frog(1, blue).
+player_frog(2, yellow).
+
+/** 
+ * Next Player
+ * next_player(+Curr, -Next)
+ * Returns the player who is next to Curr.
+ *
+ * Curr -> Player who last played.
+ * Next -> Next player to play.
+ */
+next_player(1, 2).
+next_player(2, 1).
+
+/** 
  * Iterate values
  * iterate_values(+Target, +Current, -Out)
  * Iterates over the values from Curr to Target, returning them in Out.
@@ -211,3 +233,22 @@ set_position_helper([CurrRow | Rest], NRows, [TargetRow, TargetCol], NewValue, R
 set_position(Board, Pos, NewValue, NewBoard) :-
     length(Board, NRows),
     set_position_helper(Board, NRows, Pos, NewValue, 0, NewBoard).
+
+/**
+ * Value
+ * value(+Board, +Player, -Value)
+ * Evaluates the board for the player
+ * 
+ * Board -> Game board.
+ * Player -> Current player
+ * Value -> Value of the board
+ */
+value(Board, Player, Value) :-
+    player_frog(Player, Frog),
+    findall(FrogPos, (valid_position(Board, FrogPos), get_position(Board, FrogPos, Frog)), FrogList),
+    length(FrogList, NumFrogs),
+    next_player(Player, NextPlayer),
+    player_frog(NextPlayer, NextFrog),
+    findall(FrogPos, (valid_position(Board, FrogPos), get_position(Board, FrogPos, NextFrog)), NextFrogList),
+    length(NextFrogList, NextNumFrogs),
+    Value is NumFrogs - NextNumFrogs.
