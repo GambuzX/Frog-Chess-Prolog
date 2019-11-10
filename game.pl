@@ -557,7 +557,7 @@ player_turn(InBoard, Player, OutBoard) :-
  * OutBoard -> Modified board after turn ends.
  */
 cpu_turn(InBoard, Player, OutBoard) :-
-    choose_move(InBoard, Player, 2, Move), !,
+    choose_move(InBoard, Player, 3, Move), !,
     write('CPU move'), nl, wait_for_input,
     player_frog(Player, Frog), !,
     execute_move(InBoard, Frog, Move, true, OutBoard), !.
@@ -733,7 +733,31 @@ choose_move(Board, Player, 2, Move) :-
     get_best_move(Board, Player, ListOfMoves, Move), !.
 
 choose_move(Board, Player, 3, Move) :-
-    valid_moves(Board, Player, ListOfMoves), !.
+    valid_moves(Board, Player, ListOfMoves), !,
+    get_best_move_with_next(Board, Player, ListOfMoves, Move, 2, _, _).
+
+get_best_move_with_next(Board, Player, ListOfMoves, BestMove, 0, Value, WinnerMove) :-
+   get_best_move_helper(Board, Player, ListOfMoves, Value, BestMove, WinnerMove).
+
+get_best_move_with_next(Board, Player, [FirstMove|OtherMoves], BestMove, NumCalls, Value, WinnerMove) :-
+    player_frog(Player, Frog), !,
+    execute_move(Board, Frog, FirstMove, false, NewBoard),
+    next_player(Player, NextPlayer), !,
+    valid_moves(NewBoard, NextPlayer, ListOfMoves), 
+    NewNumCalls is NumCalls - 1, !,
+    get_best_move_with_next(NewBoard, NextPlayer, ListOfMoves, _, NewNumCalls, NewValue, NewWinnerMove), !,
+    (
+        nonvar(NewWinnerMove),
+        WinnerMove = NewWinnerMove;
+
+        get_best_move_with_next(Board, Player, OtherMoves, OtherMove, NumCalls, OtherValue, OtherWinnerMove), !,
+        (
+            nonvar(OtherWinnerMove),
+            WinnerMove = OtherMove;
+
+            choose_best_move(NewValue, FirstMove, OtherValue, OtherMove, Value, BestMove)
+        )
+    ), !.
     %percorrer lista de moves e calcular moves do player seguidos do jogador
     %calcular value das jogadas finais e guardar a melhor
     %escolher melhor jogada conforme o melhor valor de cada uma
