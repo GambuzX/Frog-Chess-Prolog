@@ -118,20 +118,20 @@ init_board(FirstPlayer, TypeOfGame, B) :-
     create_empty_board(Rows, Columns, InitBoard),
     ansi_format([fg(blue)], 'BEFORE THE GAME STARTS, THE BOARD MUST BE FILLED WITH FROGS', []), nl,
     write('Choose your positions!'), nl, nl, wait_for_input,
-    fill_board(InitBoard, FirstPlayer, 0, B, TypeOfGame).
+    fill_board(InitBoard, FirstPlayer, 0, TypeOfGame, B).
 
 /**
  * Fill board
- * fill_board(+Board, +Player, +Frogs, -NewBoard, +TypeOfGame)
+ * fill_board(+Board, +Player, +Frogs, +TypeOfGame, -NewBoard)
  * Fills the board with frogs.
  * 
  * Board -> Board to fill.
  * Player -> Number of the player that will fill that next position
  * Frogs -> Number of frogs that are already on the board
- * NewBoard -> Board filled with frogs
  * TypeOfGame -> Indicates the type of game (0 - player vs player; 1 - player vs cpu; 2 - cpu vs cpu)
+ * NewBoard -> Board filled with frogs
  */
-fill_board(Board, _, FrogCount, Board, _) :-
+fill_board(Board, _, FrogCount, _, Board) :-
     [FirstRow | _] = Board,
     length(Board, NRows),
     length(FirstRow, NCols),
@@ -140,7 +140,7 @@ fill_board(Board, _, FrogCount, Board, _) :-
     display_board(Board), !,
     nl, ansi_format([fg(blue)], 'STARTING THE GAME', []), nl, wait_for_input, nl.
 
-fill_board(Board, Player, Frog, NewBoard, TypeOfGame) :-
+fill_board(Board, Player, Frog, TypeOfGame, NewBoard) :-
     (
         TypeOfGame = 0; % In player vs player mode, there will always be a player choosing the frog position 
         TypeOfGame = 1, Player = 1 % In player vs cpu mode, the first player is the person that will choose the frog
@@ -152,23 +152,30 @@ fill_board(Board, Player, Frog, NewBoard, TypeOfGame) :-
     set_position(Board, Pos, Value, IntBoard),
     next_player(Player, NextPlayer),
     NextFrog is Frog + 1,
-    fill_board(IntBoard, NextPlayer, NextFrog, NewBoard, TypeOfGame).    
+    fill_board(IntBoard, NextPlayer, NextFrog, TypeOfGame, NewBoard).    
 
-fill_board(Board, Player, Frog, NewBoard, TypeOfGame) :-
+fill_board(Board, Player, Frog, TypeOfGame, NewBoard) :-
     (
         TypeOfGame = 1, Player = 2; % In player vs cpu mode, the second player is the cpu
         TypeOfGame = 2 % Cpu vs cpu mode
     ),
-    cpu_choose(Board, Pos),
+    cpu_fill_choose(Board, Pos),
     display_cpu_fill_turn(Player, Pos),
     wait_for_input,
     player_frog(Player, Value),
     set_position(Board, Pos, Value, IntBoard),
     next_player(Player, NextPlayer),
     NextFrog is Frog + 1,
-    fill_board(IntBoard, NextPlayer, NextFrog, NewBoard, TypeOfGame).    
+    fill_board(IntBoard, NextPlayer, NextFrog, TypeOfGame, NewBoard).    
 
-
+/**
+ * Player fill choose
+ * player_fill_choose(+Board, -Pos)
+ * Gets a human player position to fill with a frog
+ *
+ * Board -> Game board.
+ * Pos -> Position choosed by the human player 
+ */
 player_fill_choose(Board, Pos) :- 
     repeat,
         (
@@ -179,7 +186,15 @@ player_fill_choose(Board, Pos) :-
             error_msg('Invalid position!')
         ).
 
-cpu_choose(Board, Pos) :-
+/**
+ * CPU fill choose
+ * cpu_fill_choose(+Board, -Pos)
+ * Gets a cpu position to fill with a frog
+ *
+ * Board -> Game board.
+ * Pos -> Position choosed by the cpu 
+ */
+cpu_fill_choose(Board, Pos) :-
     setof(X, (valid_fill_position(Board, X), get_position(Board, X, empty)), Positions),
     random_member(Pos, Positions).
 
@@ -554,11 +569,19 @@ player_turn(InBoard, Player, OutBoard) :-
 
     continue_jumping(NewBoard, Player, EndPos, 2, OutBoard).
 
+/**
+ * CPU turn
+ * cpu_turn(+InBoard, +Player, -OutBoard)
+ * Performs a cpu turn.
+ *
+ * InBoard -> Initial board.
+ * Player -> Current cpu turn.
+ * OutBoard -> Modified board after turn ends.
+ */
 cpu_turn(InBoard, Player, OutBoard) :-
-    player_frog(Player, Frog),
-    generate_move(InBoard, Frog, Move), !,
-    %write('Move: '), print_list(Move),
+    choose_move(InBoard, Player, 1, Move), !,
     write('CPU move'), nl, wait_for_input,
+    player_frog(Player, Frog),
     execute_move(InBoard, Frog, Move, OutBoard), !.
 
 /**
@@ -582,6 +605,15 @@ pvp_game(InBoard, Player, Winner) :-
         pvp_game(FinalBoard, NextPlayer, Winner)
     ), !.
 
+/**
+ * Player vs CPU game
+ * pvc_game(+InBoard, +Player, -Winner)
+ * Plays a pvc game with the given InBoard and starting player Player.
+ *
+ * InBoard -> Initial board.
+ * Player -> Current player turn.
+ * Winner -> Player who wins the game.
+ */
 pvc_game(InBoard, 1, Winner) :- %Player 1 is the human
     display_game(InBoard, 1, 0),
     player_turn(InBoard, 1, MidBoard),
@@ -605,6 +637,27 @@ pvc_game(InBoard, 2, Winner) :- %Player 2 is the cpu
     ), !.
 
 /**
+ * CPU vs CPU game
+ * cvc_game(+InBoard, +Player, -Winner)
+ * Plays a cvc game with the given InBoard and starting cpu Player.
+ *
+ * InBoard -> Initial board.
+ * Player -> Current cpu turn.
+ * Winner -> Player who wins the game.
+ */
+cvc_game(InBoard, Player, Winner) :-
+    display_game(InBoard, Player, 0),
+    cpu_turn(InBoard, Player, MidBoard),
+    remove_outer_frogs(MidBoard, FinalBoard),
+    (
+        game_over(FinalBoard, Player, Winner),
+        display_game(FinalBoard, empty, 0);
+
+        next_player(Player, NextPlayer),
+        pvc_game(FinalBoard, NextPlayer, Winner)
+    ), !.
+
+/**
  * Player vs Player
  * player_vs_player
  * Starts a 2 human player game.
@@ -617,7 +670,11 @@ player_vs_player :-
     nl, 
     display_winner(Winner).
 
-
+/**
+ * Player vs CPU
+ * player_vs_cpu
+ * Starts a human player vs cpu game.
+ */
 player_vs_cpu :-
     random_between(1, 2, FirstPlayer),
     init_board(FirstPlayer, 1, InitialBoard),
@@ -625,12 +682,24 @@ player_vs_cpu :-
     nl,
     display_winner(Winner).
 
+/**
+ * CPU vs CPU
+ * cpu_vs_cpu
+ * Starts a 2 cpu player game.
+ */
 cpu_vs_cpu :-
     random_between(1, 2, FirstPlayer),
     init_board(FirstPlayer, 2, InitialBoard), 
-    display_board(InitialBoard).
+    cvc_game(InitialBoard, FirstPlayer, Winner),
+    nl, 
+    display_winner(Winner).
 
-play_game :-
+/**
+ * Play
+ * play
+ * Starts the game.
+ */
+play :-
     display_game_name,
     display_game_modes, !,
     repeat,
@@ -669,30 +738,42 @@ play_game_mode(2) :-
 
 
 /**
- * Generate move
- * generate_move(+Board, +Frog, -Move)
- * Generates a move for the cpu to take.
+ * Choose move
+ * choose_move(+Board, +Player, +Level, -Move)
+ * Chooses a move for the cpu to take.
  * A move is composed by the sequence of positions to jump to.
  *
  * Board -> Initial Board.
- * Frog -> Player Frog.
+ * Player -> Player number.
  * Move -> List with all the jump positions of a move.
  */
-generate_move(Board, Frog, Move) :-
+choose_move(Board, Player, 1, Move) :-
+    valid_moves(Board, Player, ListOfMoves),
+    sort(0, @>=, ListOfMoves, [Move|_]).
+
+/**
+ * Valid Moves
+ * valid_moves(+Board, +Player, -ListOfMoves)
+ * Checks all valid moves and returns them in a list
+ *
+ * Board -> Initial Board.
+ * Player -> Player number
+ * ListOfMoves -> List of all the possible moves
+ */
+valid_moves(Board, Player, ListOfMoves) :-
+    player_frog(Player, Frog), 
     bagof(Pos, (valid_position(Board, Pos), get_position(Board, Pos, Frog)), FrogList), !,%Get the list of frogs
-    generate_jumps(Board, FrogList, PossibleMoves), !,
-    %write('move list'), nl, print_move_list(PossibleMoves), wait_for_input,
-    sort(0, @>=, PossibleMoves, [Move|_]).
+    generate_jumps(Board, FrogList, ListOfMoves), !.
 
 /**
  * Generate jumps
  * generate_jumps(+Board, +Frog, +ListOfPositions, -ListOfJumpPositions)
  * Generates a list of list with all the possible moves of the cpu frogs
  *
- * Board -> Initial Board
- * Frog -> Player Frog
- * ListOfPositions -> List of the initial positions of the frogs
- * ListOfJumpPositions -> List with all the moves that can be done by the cpu
+ * Board -> Initial Board.
+ * Frog -> Player Frog.
+ * ListOfPositions -> List of the initial positions of the frogs.
+ * ListOfJumpPositions -> List with all the moves that can be done by the cpu.
  */
 generate_jumps(_, [], []) :- !.
 
@@ -701,6 +782,15 @@ generate_jumps(Board, [CurrFrogPos | Rest], JumpList) :-
     generate_jumps(Board, Rest, RestFrogsJumps),
     append(CurrFrogJumps, RestFrogsJumps, JumpList).
 
+/**
+ * Prepend value to lists
+ * prepend_val_to_lists(+Value, +Lists, -NewLists)
+ * Prepends a value to all sublists of a list
+ *
+ * Value -> The value to prepend to the lists
+ * Lists -> A list with all the lists where the value will be added
+ * NewLists -> A list with the results
+ */
 prepend_val_to_lists(_, [], []) :- !.
 prepend_val_to_lists(NewValue, [[FirstListEle | RestList] | OtherLists], [[NewValue, FirstListEle | RestList] | NewLists]) :-
     prepend_val_to_lists(NewValue, OtherLists, NewLists).
