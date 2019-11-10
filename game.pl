@@ -643,7 +643,6 @@ cvc_game(InBoard, Player, Winner) :-
 player_vs_player :-
     random_between(1, 2, FirstPlayer),
     init_board(FirstPlayer, 0, InitialBoard),
-    %initialBoard(InitialBoard),
     pvp_game(InitialBoard, FirstPlayer, Winner),
     nl, 
     display_winner(Winner).
@@ -877,7 +876,6 @@ keep_jumping(InBoard, PrevJumps, [CurrDest | Rest], [NewJumpSequence | JumpList]
     % merge 2 lists of jumps
     append(JumpsFromThisPosition, JumpsFromNextPosition, JumpList).
 
-
 /**
  * Execute Move
  * execute_move(+InputBoard, +Frog, +PositionsList, +DisplayMove, -OutputBoard)
@@ -889,20 +887,50 @@ keep_jumping(InBoard, PrevJumps, [CurrDest | Rest], [NewJumpSequence | JumpList]
  * DisplayMove -> Indicates if the move should be displayed
  * OutputBoard -> Final Board
  */
-execute_move(Board, _, [_ | []], _, Board) :- !. % If there is only one position, there are no more jumps
+execute_move(InBoard, Frog, PositionList, true, OutputBoard) :-
+    execute_move_helper(InBoard, Frog, PositionList, 1, OutputBoard).
 
-execute_move(InBoard, Frog, [StartPos, EndPos| OtherPos], true, OutBoard) :-
+execute_move(InBoard, Frog, PositionList, false, OutputBoard) :-
+    execute_move_helper(InBoard, Frog, PositionList, OutputBoard).
+
+/**
+ * Execute Move Helper
+ * execute_move_helper(+InputBoard, +Frog, +PositionsList, +JumpNumber, -OutputBoard)
+ * Executes a cpu move with display
+ * 
+ * InputBoard -> Initial Board
+ * Frog -> CPU Frog
+ * PositionsList -> List of all the positions of a cpu move
+ * JumpNumber -> Number of the jump that is being executed
+ * OutputBoard -> Final Board
+ */
+execute_move_helper(Board, _, [_ | []], _, Board) :- !. % If there is only one position, there are no more jumps
+
+execute_move_helper(InBoard, Frog, [StartPos, EndPos| OtherPos], JumpN, OutBoard) :-
     middle_position(StartPos, EndPos, MidPos),
     jump(InBoard, StartPos, MidPos, EndPos, Frog, NewBoard),
-    display_board(NewBoard),
-    %write message to inform about the jump here
+    player_frog(Player, Frog),
+    display_game(NewBoard, Player, JumpN),
     wait_for_input,
-    execute_move(NewBoard, Frog, [EndPos| OtherPos], true, OutBoard).
+    NextJumpN is JumpN +1,
+    execute_move_helper(NewBoard, Frog, [EndPos| OtherPos], NextJumpN, OutBoard).
 
-execute_move(InBoard, Frog, [StartPos, EndPos| OtherPos], false, OutBoard) :-
+/**
+ * Execute Move Helper
+ * execute_move_helper(+InputBoard, +Frog, +PositionsList, -OutputBoard)
+ * Executes a cpu move without display
+ * 
+ * InputBoard -> Initial Board
+ * Frog -> CPU Frog
+ * PositionsList -> List of all the positions of a cpu move
+ * OutputBoard -> Final Board
+ */
+execute_move_helper(Board, _, [_| []], Board) :- !. % If there is only one position, there are no more jumps
+
+execute_move_helper(InBoard, Frog, [StartPos, EndPos| OtherPos], OutBoard) :-
     middle_position(StartPos, EndPos, MidPos),
     jump(InBoard, StartPos, MidPos, EndPos, Frog, NewBoard),
-    execute_move(NewBoard, Frog, [EndPos| OtherPos], false, OutBoard).
+    execute_move_helper(NewBoard, Frog, [EndPos| OtherPos], OutBoard).
 
 /*
 DEBUG STUFF
