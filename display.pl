@@ -724,14 +724,24 @@ display_flower_ascii_5 :-
  * Msg -> message to prepend.
  * Pos -> Position to display.
  */
-display_position(Msg, [Row, Col]) :-
+display_position(Msg, Pos) :-
     write(Msg),
+    display_position(Pos),
+    nl.
+
+/**
+ * Display position
+ * display_position(+Pos)
+ * Displays Pos in the format (Row, Column).
+ *
+ * Pos -> Position to display.
+ */
+display_position([Row,Col]) :-
     put_char('('),
     write(Row),
     put_char(','),
     write(Col),
-    put_char(')'),
-    nl.
+    put_char(')').
 
 /**
  * Display winner
@@ -766,3 +776,18 @@ display_game_name :-
     ansi_format([fg(blue)], "| |__   |____| |    | |  __      |      |____| |__   |___  |___   |", []), nl,
     ansi_format([fg(blue)], "| |     |  \\   |____| |____|     |____  |    | |____ ____| ____|  |", []), nl,
     ansi_format([fg(blue)], "\\=================================================================/", []), nl.
+
+/**
+ * Display CPU jump
+ * display_cpu_move(+StartPos, +EndPos)
+ * Displays a cpu jump
+ *
+ * StartPos -> Jump start position
+ * EndPos -> Jump end position
+ */
+display_cpu_jump(StartPos, EndPos) :- 
+    nl, 
+    write('CPU jumped from '), 
+    display_position(StartPos), 
+    write(' to '), 
+    display_position(EndPos), nl.

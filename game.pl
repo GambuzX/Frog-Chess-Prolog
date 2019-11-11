@@ -557,7 +557,7 @@ player_turn(InBoard, Player, OutBoard) :-
  * OutBoard -> Modified board after turn ends.
  */
 cpu_turn(InBoard, Player, OutBoard) :-
-    choose_move(InBoard, Player, 3, Move), !,
+    choose_move(InBoard, Player, 2, Move), !,
     write('CPU move'), nl, wait_for_input,
     player_frog(Player, Frog), !,
     execute_move(InBoard, Frog, Move, true, OutBoard), !.
@@ -954,6 +954,7 @@ execute_move_helper(InBoard, Frog, [StartPos, EndPos| OtherPos], JumpN, OutBoard
     jump(InBoard, StartPos, MidPos, EndPos, Frog, NewBoard),
     player_frog(Player, Frog),
     display_game(NewBoard, Player, JumpN),
+    display_cpu_jump(StartPos, EndPos),
     wait_for_input,
     NextJumpN is JumpN +1,
     execute_move_helper(NewBoard, Frog, [EndPos| OtherPos], NextJumpN, OutBoard).
