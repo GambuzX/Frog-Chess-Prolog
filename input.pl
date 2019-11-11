@@ -262,7 +262,7 @@ read_game_dimensions(Rows, Columns) :-
     ),
 
     (
-        Rows = 3, Columns = 3, write('Board can\'t be 3x3'), nl, !, fail;
+        Rest is (Rows * Columns) mod 2, Rest = 1, write('Board must have an even number of inner positions!'), nl, !, fail;
         !
     ),
     nl.
