@@ -782,8 +782,8 @@ display_game_name :-
  * display_cpu_move(+StartPos, +EndPos)
  * Displays a cpu jump
  *
- * StartPos -> Jump start position
- * EndPos -> Jump end position
+ * StartPos -> Jump start position.
+ * EndPos -> Jump end position.
  */
 display_cpu_jump(StartPos, EndPos) :- 
     nl, 
