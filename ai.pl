@@ -26,50 +26,67 @@ choose_move(Board, Player, 2, Move) :-
 
 choose_move(Board, Player, 3, Move) :-
     valid_moves(Board, Player, ListOfMoves), !,
+    %write('after valid_moves'), nl,
     minimax(Board, Player, ListOfMoves, Move, _, _).
    
 minimax(Board, Player, [LastMove|[]], LastMove, Value, WinnerMove) :-
+   % write('last minimax'),
     player_frog(Player, Frog), !, 
     execute_move(Board, Frog, LastMove, false, MidBoard), !,
     remove_outer_frogs(MidBoard, NewBoard), 
     next_player(Player, NextPlayer), !,
+    %write('executed last move'), nl,
     get_max_value_from_next_player(NewBoard, NextPlayer, MaxValue, WinMove), !,
+    %write('get_max value from next player'), nl,
     (
         WinMove = true,
         WinnerMove = LastMove;
-
+        %write('MAX VALUE'), nl,
         WinMove = false,
         Value = MaxValue
     ), !.
 
 minimax(Board, Player, [FirstMove|OtherMoves], BestMove, Value, WinnerMove) :-
+    %write('start minimax'), nl,
     minimax(Board, Player, OtherMoves, OtherBestMove, OtherValue, WinMove),
+    %write('end minimax'), nl,
     (
         nonvar(WinMove),
+        %write('Non var'), nl,
         WinnerMove = WinMove,
         BestMove = WinnerMove;
 
         player_frog(Player, Frog), !, 
-        execute_move(Board, Frog, LastMove, false, MidBoard), !,
+        execute_move(Board, Frog, FirstMove, false, MidBoard), !,
         remove_outer_frogs(MidBoard, NewBoard), 
         next_player(Player, NextPlayer), !,
+        %write('executed move'), nl,
         get_max_value_from_next_player(NewBoard, NextPlayer, MaxValue, WMove), !,
+        %write('get_max value from next player'), nl,
         (
             WMove = true,
             WinnerMove = FirstMove;
 
             WMove = false,
+            %write('choose_best_move'), nl,
             choose_best_move_with_next_values(OtherValue, OtherBestMove, MaxValue, FirstMove, Value, BestMove)
         ), !
     ), !.
 
 get_max_value_from_next_player(Board, Player, MaxValue, WinnerMove) :-
-    valid_moves(Board, Player, ListOfMoves), 
-    get_best_move_helper(Board, Player, ListOfMoves, MaxValue, _, WinMove),
+    write('valid_moves'), nl,
     (
-        var(WinMove),
-        WinnerMove = false;
-        WinnerMove = true
+        valid_moves(Board, Player, ListOfMoves), !,
+        write('ola'), nl,
+        get_best_move_helper(Board, Player, ListOfMoves, MaxValue, _, WinMove),
+        write('alo'), nl,
+        (
+            var(WinMove),
+            WinnerMove = false;
+            WinnerMove = true
+        );
+        MaxValue = 0,
+        WinnerMove = false
     ).
 
 /**
