@@ -22,22 +22,22 @@ next_player(2, 1).
 
 /** 
  * Iterate values
- * iterate_values(+Target, +Current, -Out)
+ * iterate_values(+Current, +Target, -Out)
  * Iterates over the values from Curr to Target, returning them in Out.
  * 
  * Target -> Last value.
  * Curr -> Current value.
  * Out -> Variable to return values.
  */
-iterate_values(Target, Curr, Curr) :-
+iterate_values(Curr, Target, Curr) :-
     Curr >= 0,
-    Curr < Target.
+    Curr =< Target.
 
-iterate_values(Target, Curr, Out) :-
+iterate_values(Curr, Target, Out) :-
     Curr >= 0,
-    Curr < Target,
+    Curr =< Target,
     Next is Curr+1,
-    iterate_values(Target, Next, Out).
+    iterate_values(Next, Target, Out).
 
 
 /** 
@@ -46,11 +46,12 @@ iterate_values(Target, Curr, Out) :-
  * Checks if a given row is valid given the current board.
  * 
  * Board -> Game Board
- * Row -> Row to check/retrieve.
+ * Row -> Row index to check/retrieve.
  */
 valid_row(Board, Row) :-
     length(Board, L),
-    iterate_values(L, 0, Row).
+    LastRow is L-1,
+    iterate_values(0, LastRow, Row).
 
 /** 
  * Valid column
@@ -58,11 +59,12 @@ valid_row(Board, Row) :-
  * Checks if a given column is valid given the current board.
  * 
  * Board -> Game Board
- * Column -> Column to check/retrieve.
+ * Column -> Column index to check/retrieve.
  */
 valid_column([FirstRow | _], Column) :-
     length(FirstRow, L),
-    iterate_values(L, 0, Column).
+    LastCol is L-1,
+    iterate_values(0, LastCol, Column).
 
 
 /** 
@@ -83,12 +85,12 @@ valid_position(Board, [Row, Column]) :-
  * Can not be in an edge of the board.
  * 
  * Board -> Game Board
- * Row -> Row to check/retrieve.
+ * Row -> Row index to check/retrieve.
  */
 valid_fill_row(Board, Row) :-
     length(Board, L),
-    LM is L-1,
-    iterate_values(LM, 1, Row).
+    LastFillRow is L-2,
+    iterate_values(1, LastFillRow, Row).
 
 
 /** 
@@ -98,12 +100,12 @@ valid_fill_row(Board, Row) :-
  * Can not be in an edge of the board.
  * 
  * Board -> Game Board
- * Column -> Column to check/retrieve.
+ * Column -> Column index to check/retrieve.
  */
-valid_fill_column(Board, Column) :-
-    length(Board, L),
-    LM is L-1,
-    iterate_values(LM, 1, Column).
+valid_fill_column([FirstRow | _], Column) :-
+    length(FirstRow, L),
+    LastFillCol is L-2,
+    iterate_values(1, LastFillCol, Column).
 
 /** 
  * Valid fill position
