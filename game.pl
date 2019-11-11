@@ -653,7 +653,7 @@ player_vs_cpu :-
 
 choose_ai_levels :-
     abolish(cpu_level/2),
-    display_turn(1), !, %Displays Player 1
+    display_cpu_header(1), !, %Displays Player 1
     repeat,
     (
         display_ai_levels,
@@ -662,7 +662,7 @@ choose_ai_levels :-
         nl, nl, !;
         error_msg('Invalid level!')
     ),
-    display_turn(2), !,
+    display_cpu_header(2), !,
     repeat,
     (
         display_ai_levels, 
