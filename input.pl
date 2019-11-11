@@ -235,8 +235,8 @@ read_game_mode(Mode) :-
  * Both dimensions must be between 3 and 15.
  * 3x3 board is not allowed.
  *
- * Rows -> Number of rows in the board
- * Columns -> Number of columns in the board
+ * Rows -> Number of rows in the board.
+ * Columns -> Number of columns in the board.
  */
 read_game_dimensions(Rows, Columns) :-
     write('Number of rows: '),

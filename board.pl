@@ -45,7 +45,7 @@ iterate_values(Curr, Target, Out) :-
  * valid_row(+Board, -Row)
  * Checks if a given row is valid given the current board.
  * 
- * Board -> Game Board
+ * Board -> Game Board.
  * Row -> Row index to check/retrieve.
  */
 valid_row(Board, Row) :-
@@ -58,7 +58,7 @@ valid_row(Board, Row) :-
  * valid_column(+Board, -Column)
  * Checks if a given column is valid given the current board.
  * 
- * Board -> Game Board
+ * Board -> Game Board.
  * Column -> Column index to check/retrieve.
  */
 valid_column([FirstRow | _], Column) :-
@@ -84,7 +84,7 @@ valid_position(Board, [Row, Column]) :-
  * Checks if a given row is valid to fill given the current board.
  * Can not be in an edge of the board.
  * 
- * Board -> Game Board
+ * Board -> Game Board.
  * Row -> Row index to check/retrieve.
  */
 valid_fill_row(Board, Row) :-
@@ -99,7 +99,7 @@ valid_fill_row(Board, Row) :-
  * Checks if a given column is valid to fill given the current board.
  * Can not be in an edge of the board.
  * 
- * Board -> Game Board
+ * Board -> Game Board.
  * Column -> Column index to check/retrieve.
  */
 valid_fill_column([FirstRow | _], Column) :-
@@ -242,8 +242,8 @@ set_position(Board, Pos, NewValue, NewBoard) :-
  * Evaluates the board for the player
  * 
  * Board -> Game board.
- * Player -> Current player
- * Value -> Value of the board
+ * Player -> Current player.
+ * Value -> Value of the board.
  */
 value(Board, Player, Value) :-
     player_frog(Player, Frog),
