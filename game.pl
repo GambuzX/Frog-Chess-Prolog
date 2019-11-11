@@ -4,6 +4,8 @@
 :- include('board.pl').
 :- include('ai.pl').
 
+:- dynamic cpu_level/2.
+
 /** 
  * Next Player
  * next_player(+Curr, -Next)
@@ -84,7 +86,7 @@ fill_board(Board, Player, Frog, TypeOfGame, NewBoard) :-
         TypeOfGame = 1, Player = 1 % In player vs cpu mode, the first player is the person that will choose the frog
     ),
     display_board(Board), !,
-    display_fill_turn(Player), !,
+    display_turn(Player), !,
     player_fill_choose(Board, Pos),
     player_frog(Player, Value),
     set_position(Board, Pos, Value, IntBoard),
@@ -607,7 +609,8 @@ pvc_game(InBoard, 2, Level, Winner) :- %Player 2 is the cpu
  */
 cvc_game(InBoard, Player, Winner) :-
     display_game(InBoard, Player, 0),
-    cpu_turn(InBoard, Player, 2, MidBoard),
+    player_level(Player, Level), 
+    cpu_turn(InBoard, Player, Level, MidBoard),
     remove_outer_frogs(MidBoard, FinalBoard),
     (
         game_over(FinalBoard, Player, Winner),
@@ -648,6 +651,27 @@ player_vs_cpu :-
     nl,
     display_winner(Winner).
 
+choose_ai_levels :-
+    abolish(cpu_level/2),
+    display_turn(1), !, %Displays Player 1
+    repeat,
+    (
+        display_ai_levels,
+        read_ai_level(Player1Level), !,
+        assertz(player_level(1, Player1Level)), !,
+        nl, nl, !;
+        error_msg('Invalid level!')
+    ),
+    display_turn(2), !,
+    repeat,
+    (
+        display_ai_levels, 
+        read_ai_level(Player2Level), !, 
+        assertz(player_level(2, Player2Level)), !, 
+        nl, nl, !;
+        error_msg('Invalid level!')
+    ), !.
+
 /**
  * CPU vs CPU
  * cpu_vs_cpu
@@ -655,6 +679,7 @@ player_vs_cpu :-
  */
 cpu_vs_cpu :-
     random_between(1, 2, FirstPlayer),
+    choose_ai_levels, 
     init_board(FirstPlayer, 2, InitialBoard), 
     cvc_game(InitialBoard, FirstPlayer, Winner),
     nl, 
