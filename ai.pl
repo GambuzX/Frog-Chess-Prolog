@@ -26,31 +26,51 @@ choose_move(Board, Player, 2, Move) :-
 
 choose_move(Board, Player, 3, Move) :-
     valid_moves(Board, Player, ListOfMoves), !,
-    get_best_move_with_next(Board, Player, ListOfMoves, Move, 2, _, _).
-
-get_best_move_with_next(Board, Player, ListOfMoves, BestMove, 0, Value, WinnerMove) :-
-   get_best_move_helper(Board, Player, ListOfMoves, Value, BestMove, WinnerMove).
-
-get_best_move_with_next(Board, Player, [FirstMove|OtherMoves], BestMove, NumCalls, Value, WinnerMove) :-
-    player_frog(Player, Frog), !,
-    execute_move(Board, Frog, FirstMove, false, MidBoard),
-    remove_outer_frogs(MidBoard, NewBoard),
+    minimax(Board, Player, ListOfMoves, Move, _, _).
+   
+minimax(Board, Player, [LastMove|[]], LastMove, Value, WinnerMove) :-
+    player_frog(Player, Frog), !, 
+    execute_move(Board, Frog, LastMove, false, MidBoard), !,
+    remove_outer_frogs(MidBoard, NewBoard), 
     next_player(Player, NextPlayer), !,
-    valid_moves(NewBoard, NextPlayer, ListOfMoves), 
-    NewNumCalls is NumCalls - 1, !,
-    get_best_move_with_next(NewBoard, NextPlayer, ListOfMoves, _, NewNumCalls, NewValue, NewWinnerMove), !,
+    get_max_value_from_next_player(NewBoard, NextPlayer, MaxValue, WinMove), !,
     (
-        nonvar(NewWinnerMove),
-        WinnerMove = NewWinnerMove;
+        WinMove = true,
+        WinnerMove = LastMove;
 
-        get_best_move_with_next(Board, Player, OtherMoves, OtherMove, NumCalls, OtherValue, OtherWinnerMove), !,
-        (
-            nonvar(OtherWinnerMove),
-            WinnerMove = OtherMove;
-            
-            choose_best_move(NewValue, FirstMove, OtherValue, OtherMove, Value, BestMove)
-        )
+        WinMove = false,
+        Value = MaxValue
     ), !.
+
+minimax(Board, Player, [FirstMove|OtherMoves], BestMove, Value, WinnerMove) :-
+    minimax(Board, Player, OtherMoves, OtherBestMove, OtherValue, WinMove),
+    (
+        nonvar(WinMove),
+        WinnerMove = WinMove,
+        BestMove = WinnerMove;
+
+        player_frog(Player, Frog), !, 
+        execute_move(Board, Frog, LastMove, false, MidBoard), !,
+        remove_outer_frogs(MidBoard, NewBoard), 
+        next_player(Player, NextPlayer), !,
+        get_max_value_from_next_player(NewBoard, NextPlayer, MaxValue, WMove), !,
+        (
+            WMove = true,
+            WinnerMove = FirstMove;
+
+            WMove = false,
+            choose_best_move_with_next_values(OtherValue, OtherBestMove, MaxValue, FirstMove, Value, BestMove)
+        ), !
+    ), !.
+
+get_max_value_from_next_player(Board, Player, MaxValue, WinnerMove) :-
+    valid_moves(Board, Player, ListOfMoves), 
+    get_best_move_helper(Board, Player, ListOfMoves, MaxValue, _, WinMove),
+    (
+        var(WinMove),
+        WinnerMove = false;
+        WinnerMove = true
+    ).
 
 /**
  * Get best move
@@ -126,6 +146,28 @@ choose_best_move(FirstValue, FirstMove, SecondValue, SecondMove, BestValue, Best
     length(SecondMove, SecondMoveLength),
     (
         FirstMoveLength > SecondMoveLength,
+        BestValue = FirstValue,
+        BestMove = FirstMove;
+
+        BestValue = SecondValue,
+        BestMove = SecondMove
+    ).
+
+choose_best_move_with_next_values(FirstValue, FirstMove, SecondValue, _, BestValue, BestMove) :-
+    FirstValue < SecondValue,
+    BestValue = FirstValue,
+    BestMove = FirstMove.
+
+choose_best_move_with_next_values(FirstValue, _, SecondValue, SecondMove, BestValue, BestMove) :-
+    FirstValue > SecondValue,
+    BestValue = SecondValue,
+    BestMove = SecondMove.
+
+choose_best_move_with_next_values(FirstValue, FirstMove, SecondValue, SecondMove, BestValue, BestMove) :-
+    length(FirstMove, FirstMoveLength),
+    length(SecondMove, SecondMoveLength),
+    (
+        FirstMoveLength < SecondMoveLength,
         BestValue = FirstValue,
         BestMove = FirstMove;
 
