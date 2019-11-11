@@ -266,3 +266,15 @@ read_game_dimensions(Rows, Columns) :-
         !
     ),
     nl.
+
+read_ai_level(Level) :-
+    read_single_integer(Level),
+    Level >= 1,
+    Level =< 3,
+    write(Level).
+
+read_menu_option(Option) :-
+    read_single_integer(Option), 
+    Option >= 1,
+    Option =< 4, 
+    write(Option).

@@ -33,7 +33,8 @@ get_best_move_with_next(Board, Player, ListOfMoves, BestMove, 0, Value, WinnerMo
 
 get_best_move_with_next(Board, Player, [FirstMove|OtherMoves], BestMove, NumCalls, Value, WinnerMove) :-
     player_frog(Player, Frog), !,
-    execute_move(Board, Frog, FirstMove, false, NewBoard),
+    execute_move(Board, Frog, FirstMove, false, MidBoard),
+    remove_outer_frogs(MidBoard, NewBoard),
     next_player(Player, NextPlayer), !,
     valid_moves(NewBoard, NextPlayer, ListOfMoves), 
     NewNumCalls is NumCalls - 1, !,
@@ -46,7 +47,7 @@ get_best_move_with_next(Board, Player, [FirstMove|OtherMoves], BestMove, NumCall
         (
             nonvar(OtherWinnerMove),
             WinnerMove = OtherMove;
-
+            
             choose_best_move(NewValue, FirstMove, OtherValue, OtherMove, Value, BestMove)
         )
     ), !.
@@ -80,7 +81,8 @@ get_best_move_helper(Board, Player, [LastMove|[]], Value, LastMove, _) :- value(
 
 get_best_move_helper(Board, Player, [FirstMove|OtherMoves], BestValue, BestMove, WinnerMove) :-
     player_frog(Player, Frog),
-    execute_move(Board, Frog, FirstMove, false, NewBoard),
+    execute_move(Board, Frog, FirstMove, false, MidBoard),
+    remove_outer_frogs(MidBoard, NewBoard),
     (
         game_over(NewBoard, Player, Player), %if the game ends, and the player won, this is the best move
         BestMove = FirstMove,
@@ -212,7 +214,7 @@ keep_jumping(InBoard, PrevJumps, [CurrDest | Rest], [NewJumpSequence | JumpList]
 
     % merge 2 lists of jumps
     append(JumpsFromThisPosition, JumpsFromNextPosition, JumpList).
-    
+
 /**
  * Execute Move
  * execute_move(+InputBoard, +Frog, +PositionsList, +DisplayMove, -OutputBoard)

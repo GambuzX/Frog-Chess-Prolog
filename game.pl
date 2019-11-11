@@ -3,6 +3,7 @@
 :- include('display.pl').
 :- include('input.pl').
 :- include('board.pl').
+:- include('ai.pl').
 
 /** 
  * Valid game mode
@@ -549,15 +550,16 @@ player_turn(InBoard, Player, OutBoard) :-
 
 /**
  * CPU turn
- * cpu_turn(+InBoard, +Player, -OutBoard)
+ * cpu_turn(+InBoard, +Player, +Level, -OutBoard)
  * Performs a cpu turn.
  *
  * InBoard -> Initial board.
  * Player -> Current cpu turn.
+ * Level -> AI level.
  * OutBoard -> Modified board after turn ends.
  */
-cpu_turn(InBoard, Player, OutBoard) :-
-    choose_move(InBoard, Player, 2, Move), !,    
+cpu_turn(InBoard, Player, Level, OutBoard) :-
+    choose_move(InBoard, Player, Level, Move), !,    
     ansi_format([fg(blue)], 'CPU MOVE', []), nl, wait_for_input,
     player_frog(Player, Frog), !,
     execute_move(InBoard, Frog, Move, true, OutBoard), !.
@@ -592,7 +594,7 @@ pvp_game(InBoard, Player, Winner) :-
  * Player -> Current player turn.
  * Winner -> Player who wins the game.
  */
-pvc_game(InBoard, 1, Winner) :- %Player 1 is the human
+pvc_game(InBoard, 1, Level, Winner) :- %Player 1 is the human
     display_game(InBoard, 1, 0),
     player_turn(InBoard, 1, MidBoard),
     remove_outer_frogs(MidBoard, FinalBoard),
@@ -600,18 +602,18 @@ pvc_game(InBoard, 1, Winner) :- %Player 1 is the human
         game_over(FinalBoard, 1, Winner),
         display_game(FinalBoard, empty, 0);
 
-        pvc_game(FinalBoard, 2, Winner)
+        pvc_game(FinalBoard, 2, Level, Winner)
     ), !.
 
-pvc_game(InBoard, 2, Winner) :- %Player 2 is the cpu
+pvc_game(InBoard, 2, Level, Winner) :- %Player 2 is the cpu
     display_game(InBoard, 2, 0),
-    cpu_turn(InBoard, 2, MidBoard),
+    cpu_turn(InBoard, 2, Level, MidBoard),
     remove_outer_frogs(MidBoard, FinalBoard),
     (
         game_over(FinalBoard, 2, Winner),
         display_game(FinalBoard, empty, 0);
 
-        pvc_game(FinalBoard, 1, Winner)
+        pvc_game(FinalBoard, 1, Level, Winner)
     ), !.
 
 /**
@@ -625,7 +627,7 @@ pvc_game(InBoard, 2, Winner) :- %Player 2 is the cpu
  */
 cvc_game(InBoard, Player, Winner) :-
     display_game(InBoard, Player, 0),
-    cpu_turn(InBoard, Player, MidBoard),
+    cpu_turn(InBoard, Player, 2, MidBoard),
     remove_outer_frogs(MidBoard, FinalBoard),
     (
         game_over(FinalBoard, Player, Winner),
@@ -654,8 +656,15 @@ player_vs_player :-
  */
 player_vs_cpu :-
     random_between(1, 2, FirstPlayer),
+    repeat,
+    (
+        display_ai_levels,
+        read_ai_level(Level), 
+        nl, nl, !;
+        error_msg('Invalid level!')
+    ),
     init_board(FirstPlayer, 1, InitialBoard),
-    pvc_game(InitialBoard, FirstPlayer, Winner),
+    pvc_game(InitialBoard, FirstPlayer, Level, Winner),
     nl,
     display_winner(Winner).
 
@@ -676,8 +685,7 @@ cpu_vs_cpu :-
  * play
  * Starts the game.
  */
-play :-
-    display_game_name,
+play_game :-
     display_game_modes, !,
     repeat,
         (
@@ -690,6 +698,40 @@ play :-
             error_msg('Invalid mode!')
         ),
     play_game_mode(M).
+
+choose_menu_option(1) :-
+    play_game, !, 
+    game_menu, !.
+
+choose_menu_option(2) :-
+    %display_instructions, !,
+    game_menu, !.
+
+choose_menu_option(3) :-
+    %display_credits, !,
+    game_menu, !.
+
+choose_menu_option(4). %4 is the exit option
+
+game_menu :-
+    repeat,
+        (
+            display_menu_options, 
+            read_menu_option(Option), nl, !,
+            choose_menu_option(Option), !;
+            error_msg('Invalid option!')
+        ).
+
+/**
+ * Play
+ * play
+ * Starts the game menu.
+ */
+play :-
+    display_game_name,
+    game_menu,
+    display_thank_you_msg.
+   
 
 /**
  * Play game mode
