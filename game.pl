@@ -2,6 +2,7 @@
 :- include('display.pl').
 :- include('input.pl').
 :- include('board.pl').
+:- include('ai.pl').
 
 /** 
  * Next Player
@@ -529,15 +530,16 @@ player_turn(InBoard, Player, OutBoard) :-
 
 /**
  * CPU turn
- * cpu_turn(+InBoard, +Player, -OutBoard)
+ * cpu_turn(+InBoard, +Player, +Level, -OutBoard)
  * Performs a cpu turn.
  *
  * InBoard -> Initial board.
  * Player -> Current cpu turn.
+ * Level -> AI level.
  * OutBoard -> Modified board after turn ends.
  */
-cpu_turn(InBoard, Player, OutBoard) :-
-    choose_move(InBoard, Player, 2, Move), !,    
+cpu_turn(InBoard, Player, Level, OutBoard) :-
+    choose_move(InBoard, Player, Level, Move), !,    
     ansi_format([fg(blue)], 'CPU MOVE', []), nl, wait_for_input,
     player_frog(Player, Frog), !,
     execute_move(InBoard, Frog, Move, true, OutBoard), !.
@@ -572,7 +574,7 @@ pvp_game(InBoard, Player, Winner) :-
  * Player -> Current player turn.
  * Winner -> Player who wins the game.
  */
-pvc_game(InBoard, 1, Winner) :- %Player 1 is the human
+pvc_game(InBoard, 1, Level, Winner) :- %Player 1 is the human
     display_game(InBoard, 1, 0),
     player_turn(InBoard, 1, MidBoard),
     remove_outer_frogs(MidBoard, FinalBoard),
@@ -580,18 +582,18 @@ pvc_game(InBoard, 1, Winner) :- %Player 1 is the human
         game_over(FinalBoard, 1, Winner),
         display_game(FinalBoard, empty, 0);
 
-        pvc_game(FinalBoard, 2, Winner)
+        pvc_game(FinalBoard, 2, Level, Winner)
     ), !.
 
-pvc_game(InBoard, 2, Winner) :- %Player 2 is the cpu
+pvc_game(InBoard, 2, Level, Winner) :- %Player 2 is the cpu
     display_game(InBoard, 2, 0),
-    cpu_turn(InBoard, 2, MidBoard),
+    cpu_turn(InBoard, 2, Level, MidBoard),
     remove_outer_frogs(MidBoard, FinalBoard),
     (
         game_over(FinalBoard, 2, Winner),
         display_game(FinalBoard, empty, 0);
 
-        pvc_game(FinalBoard, 1, Winner)
+        pvc_game(FinalBoard, 1, Level, Winner)
     ), !.
 
 /**
@@ -605,7 +607,7 @@ pvc_game(InBoard, 2, Winner) :- %Player 2 is the cpu
  */
 cvc_game(InBoard, Player, Winner) :-
     display_game(InBoard, Player, 0),
-    cpu_turn(InBoard, Player, MidBoard),
+    cpu_turn(InBoard, Player, 2, MidBoard),
     remove_outer_frogs(MidBoard, FinalBoard),
     (
         game_over(FinalBoard, Player, Winner),
@@ -634,8 +636,15 @@ player_vs_player :-
  */
 player_vs_cpu :-
     random_between(1, 2, FirstPlayer),
+    repeat,
+    (
+        display_ai_levels,
+        read_ai_level(Level), 
+        nl, nl, !;
+        error_msg('Invalid level!')
+    ),
     init_board(FirstPlayer, 1, InitialBoard),
-    pvc_game(InitialBoard, FirstPlayer, Winner),
+    pvc_game(InitialBoard, FirstPlayer, Level, Winner),
     nl,
     display_winner(Winner).
 
@@ -656,8 +665,7 @@ cpu_vs_cpu :-
  * play
  * Starts the game.
  */
-play :-
-    display_game_name,
+play_game :-
     display_game_modes, !,
     repeat,
         (
@@ -670,6 +678,40 @@ play :-
             error_msg('Invalid mode!')
         ),
     play_game_mode(M).
+
+choose_menu_option(1) :-
+    play_game, !, 
+    game_menu, !.
+
+choose_menu_option(2) :-
+    %display_instructions, !,
+    game_menu, !.
+
+choose_menu_option(3) :-
+    %display_credits, !,
+    game_menu, !.
+
+choose_menu_option(4). %4 is the exit option
+
+game_menu :-
+    repeat,
+        (
+            display_menu_options, 
+            read_menu_option(Option), nl, !,
+            choose_menu_option(Option), !;
+            error_msg('Invalid option!')
+        ).
+
+/**
+ * Play
+ * play
+ * Starts the game menu.
+ */
+play :-
+    display_game_name,
+    game_menu,
+    display_thank_you_msg.
+   
 
 /**
  * Play game mode
@@ -686,275 +728,3 @@ play_game_mode(1) :-
 
 play_game_mode(2) :-
     cpu_vs_cpu.
-
-%%%%%%%%%%%%%%%%%%%%
-%                  %
-%        AI        %
-%                  %
-%%%%%%%%%%%%%%%%%%%%
-
-
-/**
- * Choose move
- * choose_move(+Board, +Player, +Level, -Move)
- * Chooses a move for the cpu to take.
- * A move is composed by the sequence of positions to jump to.
- *
- * Board -> Initial Board.
- * Player -> Player number.
- * Move -> List with all the jump positions of a move.
- */
-choose_move(Board, Player, 1, Move) :-
-    valid_moves(Board, Player, ListOfMoves), !,
-    sort(0, @>=, ListOfMoves, [Move|_]), !.
-
-choose_move(Board, Player, 2, Move) :-
-    valid_moves(Board, Player, ListOfMoves), !,
-    get_best_move(Board, Player, ListOfMoves, Move), !.
-
-choose_move(Board, Player, 3, Move) :-
-    valid_moves(Board, Player, ListOfMoves), !,
-    get_best_move_with_next(Board, Player, ListOfMoves, Move, 2, _, _).
-
-get_best_move_with_next(Board, Player, ListOfMoves, BestMove, 0, Value, WinnerMove) :-
-   get_best_move_helper(Board, Player, ListOfMoves, Value, BestMove, WinnerMove).
-
-get_best_move_with_next(Board, Player, [FirstMove|OtherMoves], BestMove, NumCalls, Value, WinnerMove) :-
-    player_frog(Player, Frog), !,
-    execute_move(Board, Frog, FirstMove, false, NewBoard),
-    next_player(Player, NextPlayer), !,
-    valid_moves(NewBoard, NextPlayer, ListOfMoves), 
-    NewNumCalls is NumCalls - 1, !,
-    get_best_move_with_next(NewBoard, NextPlayer, ListOfMoves, _, NewNumCalls, NewValue, NewWinnerMove), !,
-    (
-        nonvar(NewWinnerMove),
-        WinnerMove = NewWinnerMove;
-
-        get_best_move_with_next(Board, Player, OtherMoves, OtherMove, NumCalls, OtherValue, OtherWinnerMove), !,
-        (
-            nonvar(OtherWinnerMove),
-            WinnerMove = OtherMove;
-
-            choose_best_move(NewValue, FirstMove, OtherValue, OtherMove, Value, BestMove)
-        )
-    ), !.
-
-/**
- * Get best move
- * get_best_move(+Board, +Player, +ListOfMoves, -BestMove)
- * Gets the best move of a list of moves
- *
- * Board -> Game board.
- * Player -> Player number.
- * ListOfMoves -> List with all the possible moves of Player.
- * BestMove -> The best move for the Player.
- */
-get_best_move(Board, Player, ListOfMoves, BestMove) :-
-    get_best_move_helper(Board, Player, ListOfMoves, _, BestMove, _).
-
-/**
- * Get best move helper
- * get_best_move_helper(+Board, +Player, +ListOfMoves, ?Value, -BestMove, ?WinnerMove)
- * Gets the best move of a list of moves
- *
- * Board -> Game board.
- * Player -> Player number.
- * ListOfMoves -> List with all the possible moves of Player.
- * Value -> The value of the best move.
- * BestMove -> The best move for the Player.
- * WinnerMove -> Auxiliar variable that is used to check if some move wins the game.
- */
-get_best_move_helper(Board, Player, [LastMove|[]], Value, LastMove, _) :- value(Board, Player, Value).
-
-get_best_move_helper(Board, Player, [FirstMove|OtherMoves], BestValue, BestMove, WinnerMove) :-
-    player_frog(Player, Frog),
-    execute_move(Board, Frog, FirstMove, false, NewBoard),
-    (
-        game_over(NewBoard, Player, Player), %if the game ends, and the player won, this is the best move
-        BestMove = FirstMove,
-        WinnerMove = BestMove; 
-        
-        value(NewBoard, Player, NewBoardValue), !,
-        get_best_move_helper(Board, Player, OtherMoves, NewBestValue, NewBestMove, WinnerMove), !,
-        (
-            nonvar(WinnerMove), %if the get_best_move_helper returned a value, this is the best value
-            BestMove = NewBestMove;
-
-            var(WinnerMove), 
-            choose_best_move(NewBoardValue, FirstMove, NewBestValue, NewBestMove, BestValue, BestMove), !
-        )
-    ).
-
-/**
- * Choose best move
- * choose_best_move(+FirstValue, +FirstMove, +SecondValue, +SecondMove, -BestValue, -BestMove)
- * Chooses the best of two moves
- *
- * FirstValue -> The value of the first move.
- * FirstMove -> The first move.
- * SecondValue -> The value of the second move.
- * SecondMove -> The second move.
- * BestValue -> The value of the best move.
- * BestMove -> The best of the two moves.
- */
-choose_best_move(FirstValue, FirstMove, SecondValue, _, BestValue, BestMove) :-
-    FirstValue > SecondValue,
-    BestValue = FirstValue,
-    BestMove = FirstMove.
-
-choose_best_move(FirstValue, _, SecondValue, SecondMove, BestValue, BestMove) :-
-    FirstValue < SecondValue,
-    BestValue = SecondValue,
-    BestMove = SecondMove.
-
-choose_best_move(FirstValue, FirstMove, SecondValue, SecondMove, BestValue, BestMove) :-
-    length(FirstMove, FirstMoveLength),
-    length(SecondMove, SecondMoveLength),
-    (
-        FirstMoveLength > SecondMoveLength,
-        BestValue = FirstValue,
-        BestMove = FirstMove;
-
-        BestValue = SecondValue,
-        BestMove = SecondMove
-    ).
-
-/**
- * Valid Moves
- * valid_moves(+Board, +Player, -ListOfMoves)
- * Checks all valid moves and returns them in a list
- *
- * Board -> Initial Board.
- * Player -> Player number.
- * ListOfMoves -> List of all the possible moves.
- */
-valid_moves(Board, Player, ListOfMoves) :-
-    player_frog(Player, Frog), 
-    bagof(Pos, (valid_position(Board, Pos), get_position(Board, Pos, Frog)), FrogList), !,%Get the list of frogs
-    generate_jumps(Board, FrogList, ListOfMoves), !.
-
-/**
- * Generate jumps
- * generate_jumps(+Board, +Frog, +ListOfPositions, -ListOfJumpPositions)
- * Generates a list of list with all the possible moves of the cpu frogs
- *
- * Board -> Initial Board.
- * Frog -> Player Frog.
- * ListOfPositions -> List of the initial positions of the frogs.
- * ListOfJumpPositions -> List with all the moves that can be done by the cpu.
- */
-generate_jumps(_, [], []) :- !.
-
-generate_jumps(Board, [CurrFrogPos | Rest], JumpList) :-
-    get_jumps(Board, [CurrFrogPos], CurrFrogJumps),
-    generate_jumps(Board, Rest, RestFrogsJumps),
-    append(CurrFrogJumps, RestFrogsJumps, JumpList).
-
-/**
- * Get Jumps
- * get_jumps(+Board, +PrevJumps, -JumpList)
- * Gets all the new jumps possible given the current board and the previous jumps
- *
- * Board -> Game Board.
- * PrevJumps -> Previous Jumps.
- * JumpList -> The List of New Jumps.
- */
-get_jumps(Board, PrevJumps, JumpList) :-
-    last(PrevJumps, CurrPosition),
-    (
-        bagof(EndPos, frog_can_jump(Board, CurrPosition, EndPos), NewJumps);
-        NewJumps = []
-    ), !,
-
-    (
-        length(NewJumps, 0), JumpList = [];
-        keep_jumping(Board, PrevJumps, NewJumps, JumpList)
-    ), !.
-
-/**
- * Keep Jumping
- * keep_jumping(+InBoard, +PreviousJumps, +NewDestinations, -JumpList)
- * Calls get_jump for each element of the NewDestinations list
- *
- * InBoard -> Initial Board.
- * PreviousJumps -> List with all the positions in this jump sequence.
- * NewDestinations -> List with the new possible destinations.
- * JumpList -> List with all the jumps.
- */
-keep_jumping(_, _, [], []) :- !.
-keep_jumping(InBoard, PrevJumps, [CurrDest | Rest], [NewJumpSequence | JumpList]) :-
-    % determine sequence of jumps until this one
-    append(PrevJumps, [CurrDest], NewJumpSequence),
-
-    % get board after the last jump
-    last(PrevJumps, CurrPosition), % get current position
-    get_position(InBoard, CurrPosition, Frog), % determine frog
-    middle_position(CurrPosition, CurrDest, MidPos), % get middle position
-    jump(InBoard, CurrPosition, MidPos, CurrDest, Frog, NewBoard), % jump
-
-    % keep jumping from this position
-    get_jumps(NewBoard, NewJumpSequence, JumpsFromThisPosition),
-
-    % continue to the other jump destinations
-    keep_jumping(InBoard, PrevJumps, Rest, JumpsFromNextPosition),
-
-    % merge 2 lists of jumps
-    append(JumpsFromThisPosition, JumpsFromNextPosition, JumpList).
-
-/**
- * Execute Move
- * execute_move(+InputBoard, +Frog, +PositionsList, +DisplayMove, -OutputBoard)
- * Executes a cpu move
- * 
- * InputBoard -> Initial Board.
- * Frog -> CPU Frog.
- * PositionsList -> List of all the positions of a cpu move.
- * DisplayMove -> Indicates if the move should be displayed.
- * OutputBoard -> Final Board.
- */
-execute_move(InBoard, Frog, PositionList, true, OutputBoard) :-
-    execute_move_helper(InBoard, Frog, PositionList, 1, OutputBoard).
-
-execute_move(InBoard, Frog, PositionList, false, OutputBoard) :-
-    execute_move_helper(InBoard, Frog, PositionList, OutputBoard).
-
-/**
- * Execute Move Helper
- * execute_move_helper(+InputBoard, +Frog, +PositionsList, +JumpNumber, -OutputBoard)
- * Executes a cpu move with display
- * 
- * InputBoard -> Initial Board.
- * Frog -> CPU Frog.
- * PositionsList -> List of all the positions of a cpu move.
- * JumpNumber -> Number of the jump that is being executed.
- * OutputBoard -> Final Board.
- */
-execute_move_helper(Board, _, [_ | []], _, Board) :- !. % If there is only one position, there are no more jumps
-
-execute_move_helper(InBoard, Frog, [StartPos, EndPos| OtherPos], JumpN, OutBoard) :-
-    middle_position(StartPos, EndPos, MidPos),
-    jump(InBoard, StartPos, MidPos, EndPos, Frog, NewBoard),
-    player_frog(Player, Frog),
-    display_game(NewBoard, Player, JumpN),
-    display_cpu_jump(StartPos, EndPos),
-    wait_for_input,
-    NextJumpN is JumpN +1,
-    execute_move_helper(NewBoard, Frog, [EndPos| OtherPos], NextJumpN, OutBoard).
-
-
-/**
- * Execute Move Helper
- * execute_move_helper(+InputBoard, +Frog, +PositionsList, -OutputBoard)
- * Executes a cpu move without display
- * 
- * InputBoard -> Initial Board.
- * Frog -> CPU Frog.
- * PositionsList -> List of all the positions of a cpu move.
- * OutputBoard -> Final Board.
- */
-execute_move_helper(Board, _, [_| []], Board) :- !. % If there is only one position, there are no more jumps
-
-execute_move_helper(InBoard, Frog, [StartPos, EndPos| OtherPos], OutBoard) :-
-    middle_position(StartPos, EndPos, MidPos),
-    jump(InBoard, StartPos, MidPos, EndPos, Frog, NewBoard),
-    execute_move_helper(NewBoard, Frog, [EndPos| OtherPos], OutBoard).

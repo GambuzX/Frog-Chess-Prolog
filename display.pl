@@ -817,3 +817,36 @@ display_cpu_jump([StartRow, StartCol], [EndRow, EndCol]) :-
  */
 error_msg(Msg) :-
     nl, write(Msg), nl, nl, fail.
+
+/**
+ * Display AI levels
+ * display_ai_levels
+ */
+display_ai_levels :-
+    write('Choose one of the following levels:'), nl,
+    write('\t1- Easy'), nl,
+    write('\t2- Medium'), nl,
+    write('\t3- Hard'), nl, nl.
+
+/**
+ * Display Menu Options
+ * display_menu_options
+ */
+display_menu_options :-
+    nl, nl,
+    ansi_format([fg(cyan)], " MAIN MENU ", []), nl, nl,
+    
+    write(' 1- Play Game'), nl,
+    write(' 2- Instructions'), nl,
+    write(' 3- Credits'), nl,
+    write(' 4- Exit'), nl, nl.
+
+/**
+ * Display Thank You Message
+ * display_thank_you_msg
+ * Displays a thank you message in the end of the game
+ */
+display_thank_you_msg :-
+    nl, nl,
+    ansi_format([fg(blue)], "Thanks for playing Frog Chess!", []), nl, 
+    ansi_format([fg(blue)], "Hope you enjoyed it!", []), nl, nl.
