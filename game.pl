@@ -482,7 +482,30 @@ continue_jumping(InBoard, Player, [FrogRow, FrogCol], JumpN, OutBoard) :-
             next_player(Player, NextPlayer),
             nl, write('Player '), write(NextPlayer), write(' turn.'), nl, 
             wait_for_input
-        ).
+        ).        
+
+/**
+ * Value
+ * value(+Board, +Player, -Value)
+ * Evaluates the given board, assuming current player is Player.
+ * Value is defined as the difference between the number of each player frogs.
+ * 
+ * Board -> Game board.
+ * Player -> Current player.
+ * Value -> Value of the board.
+ */
+value(Board, Player, Value) :-
+    player_frog(Player, PlayerFrog),
+    findall(FrogPos, (valid_position(Board, FrogPos), get_position(Board, FrogPos, PlayerFrog)), FrogList),
+    length(FrogList, NumPlayerFrogs),
+
+    next_player(Player, NextPlayer),
+    player_frog(NextPlayer, OpponentFrog),
+    findall(FrogPos, (valid_position(Board, FrogPos), get_position(Board, FrogPos, OpponentFrog)), OpponentFrogList),
+    length(OpponentFrogList, NumOpponentFrogs),
+
+    Value is NumPlayerFrogs - NumOpponentFrogs.
+
 
 /**
  * Player turn

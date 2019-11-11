@@ -226,25 +226,6 @@ set_position(Board, Pos, NewValue, NewBoard) :-
     set_position_helper(Board, NRows, Pos, NewValue, 0, NewBoard).
 
 /**
- * Value
- * value(+Board, +Player, -Value)
- * Evaluates the board for the player
- * 
- * Board -> Game board.
- * Player -> Current player.
- * Value -> Value of the board.
- */
-value(Board, Player, Value) :-
-    player_frog(Player, Frog),
-    findall(FrogPos, (valid_position(Board, FrogPos), get_position(Board, FrogPos, Frog)), FrogList),
-    length(FrogList, NumFrogs),
-    next_player(Player, NextPlayer),
-    player_frog(NextPlayer, NextFrog),
-    findall(FrogPos, (valid_position(Board, FrogPos), get_position(Board, FrogPos, NextFrog)), NextFrogList),
-    length(NextFrogList, NextNumFrogs),
-    Value is NumFrogs - NextNumFrogs.
-
-/**
  * Create empty row
  * append_rows(+Columns, -OutRow)
  * Creates an empty row of size Columns
