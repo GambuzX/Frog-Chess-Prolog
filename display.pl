@@ -12,7 +12,7 @@ player_color(1, cyan).
 player_color(2, yellow).
 
 /**
- * Frog Color
+ * Color
  * frog_color(+PlayerFrogColor, -DisplayFrogColor)
  * Associates a display color to each frog color.
  * 
@@ -778,16 +778,17 @@ display_game_name :-
     ansi_format([fg(blue)], "\\=================================================================/", []), nl.
 
 /**
- * Display CPU jump
- * display_cpu_move(+StartPos, +EndPos)
- * Displays a cpu jump
+ * Display jump
+ * display_jump(+Msg, +StartPos, +EndPos)
+ * Displays a cpu jump and prepends given msg.
  *
- * StartPos -> Jump start position
- * EndPos -> Jump end position
+ * Msg -> Message to preprend.
+ * StartPos -> Jump start position.
+ * EndPos -> Jump end position.
  */
-display_cpu_jump(StartPos, EndPos) :- 
+display_jump(Msg, StartPos, EndPos) :- 
     nl, 
-    write('CPU jumped from '), 
+    write(Msg), 
     display_position(StartPos), 
     write(' to '), 
     display_position(EndPos), nl.

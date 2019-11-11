@@ -35,7 +35,7 @@ error_msg(Msg) :-
  */
 init_game_dimensions(Rows, Columns) :-
     ansi_format([fg(blue)], 'CONFIGURE THE BOARD DIMENSIONS', []), nl,
-    write('8x8 board  is recommended.'), nl,
+    write('The original board is 8x8.'), nl,
     repeat,
         nl, read_game_dimensions(Rows, Columns), !.
 
@@ -116,7 +116,7 @@ fill_board(Board, _, FrogCount, _, Board) :-
     FrogCount is (NCols-2)*(NRows-2),
 
     display_board(Board), !,
-    nl, ansi_format([fg(blue)], 'STARTING THE GAME', []), nl, wait_for_input, nl.
+    nl, ansi_format([fg(blue)], 'GAME WILL START!', []), nl, wait_for_input, nl.
 
 fill_board(Board, Player, Frog, TypeOfGame, NewBoard) :-
     (
@@ -557,8 +557,8 @@ player_turn(InBoard, Player, OutBoard) :-
  * OutBoard -> Modified board after turn ends.
  */
 cpu_turn(InBoard, Player, OutBoard) :-
-    choose_move(InBoard, Player, 2, Move), !,
-    write('CPU move'), nl, wait_for_input,
+    choose_move(InBoard, Player, 2, Move), !,    
+    ansi_format([fg(blue)], 'CPU MOVE', []), nl, wait_for_input,
     player_frog(Player, Frog), !,
     execute_move(InBoard, Frog, Move, true, OutBoard), !.
 
@@ -681,7 +681,7 @@ play :-
     display_game_modes, !,
     repeat,
         (
-            write('What mode do you want to choose? '), 
+            write('What mode do you want to play? '), 
             read_game_mode(Mode), 
             M is Mode - 1,
             valid_game_mode(M),
@@ -920,6 +920,21 @@ keep_jumping(InBoard, PrevJumps, [CurrDest | Rest], [NewJumpSequence | JumpList]
     append(JumpsFromThisPosition, JumpsFromNextPosition, JumpList).
 
 /**
+ * Display CPU Jump
+ * display_cpu_jump(+StartPos, +EndPos)
+ * Displays a cpu jump.
+ * 
+ * StartPos -> Starting position.
+ * EndPos -> End position.
+ */
+display_cpu_jump([StartRow, StartCol], [EndRow, EndCol]) :-
+    index_to_row(StartRow, SRow),
+    index_to_col(StartCol, SCol),
+    index_to_row(EndRow, ERow),
+    index_to_col(EndCol, ECol),
+    display_jump('CPU jumped from ', [SRow, SCol], [ERow, ECol]).
+
+/**
  * Execute Move
  * execute_move(+InputBoard, +Frog, +PositionsList, +DisplayMove, -OutputBoard)
  * Executes a cpu move
@@ -959,6 +974,7 @@ execute_move_helper(InBoard, Frog, [StartPos, EndPos| OtherPos], JumpN, OutBoard
     NextJumpN is JumpN +1,
     execute_move_helper(NewBoard, Frog, [EndPos| OtherPos], NextJumpN, OutBoard).
 
+
 /**
  * Execute Move Helper
  * execute_move_helper(+InputBoard, +Frog, +PositionsList, -OutputBoard)
@@ -975,19 +991,3 @@ execute_move_helper(InBoard, Frog, [StartPos, EndPos| OtherPos], OutBoard) :-
     middle_position(StartPos, EndPos, MidPos),
     jump(InBoard, StartPos, MidPos, EndPos, Frog, NewBoard),
     execute_move_helper(NewBoard, Frog, [EndPos| OtherPos], OutBoard).
-
-/*
-DEBUG STUFF
-*/
-print_position([Row, Col]) :-
-    write('('), write(Row), write(','), write(Col), write(')').
-
-print_list([]) :- wait_for_input.
-print_list([Curr | Rest]) :-
-    print_position(Curr),
-    write(' - '), print_list(Rest).
-
-print_move_list([]).
-print_move_list([CurrMove | NextMoves]) :-
-    print_list(CurrMove), nl,
-    print_move_list(NextMoves).
