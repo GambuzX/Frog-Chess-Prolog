@@ -1,8 +1,18 @@
 :- use_module(library(lists)).
-:- include('game_state.pl').
 :- include('display.pl').
 :- include('input.pl').
 :- include('board.pl').
+
+/** 
+ * Next Player
+ * next_player(+Curr, -Next)
+ * Returns the player who is next to Curr.
+ *
+ * Curr -> Player who last played.
+ * Next -> Next player to play.
+ */
+next_player(1, 2).
+next_player(2, 1).
 
 /** 
  * Valid game mode
@@ -14,16 +24,6 @@
 valid_game_mode(Mode) :-
     Mode >= 0,
     Mode =< 2.
-
-/**
- * Display a error message
- * error_msg(+Msg)
- * Displays a error message on screen and fails.
- *
- * Msg -> Message to be displayed.
- */
-error_msg(Msg) :-
-    nl, write(Msg), nl, nl, fail.
 
 /**
  * Initialize game dimensions
@@ -38,47 +38,6 @@ init_game_dimensions(Rows, Columns) :-
     write('The original board is 8x8.'), nl,
     repeat,
         nl, read_game_dimensions(Rows, Columns), !.
-
-/**
- * Create empty row
- * append_rows(+Columns, -OutRow)
- * Creates an empty row of size Columns
- * 
- * Columns -> Number of columns in the row.
- * OutRow -> Variable to return created empty row.
- */
-create_empty_row(0, []) :- !.
-create_empty_row(Columns, [empty | EmptyRow]) :-
-    Count is Columns-1,
-    create_empty_row(Count, EmptyRow).
-
-/**
- * Append rows
- * append_rows(+Rows, +EmptyRow, -OutBoard)
- * Creates a new board by appending EmptyRow in an empty list Rows times.
- * 
- * Rows -> Number of rows in the board.
- * EmptyRow -> Row to append.
- * OutBoard -> Variable to return created empty board.
- */
-append_rows(0, _, []) :- !.
-append_rows(Rows, EmptyRow, [EmptyRow | OutBoard]) :-
-    Count is Rows-1,
-    append_rows(Count, EmptyRow, OutBoard).
-
-/**
- * Create empty board
- * create_empty_board(+Rows, +Columns, -OutBoard)
- * Creates a new empty board of given dimensions.
- * 
- * Rows -> Number of rows in the board.
- * Columns -> Number of columns in the board.
- * OutBoard -> Variable to return created empty board.
- */
-create_empty_board(Rows, Columns, OutBoard) :-
-    create_empty_row(Columns, EmptyRow),
-    append_rows(Rows, EmptyRow, OutBoard).
-
 
 /**
  * Initialize board
@@ -149,7 +108,7 @@ fill_board(Board, Player, Frog, TypeOfGame, NewBoard) :-
 /**
  * Player fill choose
  * player_fill_choose(+Board, -Pos)
- * Gets a human player position to fill with a frog
+ * Gets a human player position to fill with a frog.
  *
  * Board -> Game board.
  * Pos -> Position choosed by the human player.
@@ -167,7 +126,7 @@ player_fill_choose(Board, Pos) :-
 /**
  * CPU fill choose
  * cpu_fill_choose(+Board, -Pos)
- * Gets a cpu position to fill with a frog
+ * Gets a cpu position to fill with a frog.
  *
  * Board -> Game board.
  * Pos -> Position choosed by the cpu 
@@ -239,7 +198,6 @@ valid_jump_position(Board, [SRow, SCol], [ERow, ECol]) :-
 middle_position([SRow,SCol], [ERow,ECol], [MRow,MCol]) :-
     MRow is (SRow+ERow)/2,
     MCol is (SCol+ECol)/2.
-
 
 /**
  * Frog can jump
@@ -362,7 +320,6 @@ jumpable_frog_in_row(Board, Player, Pos) :-
 jumpable_frog_in_row(Board, Player, [RowI, ColI]) :-
     NextColI is ColI+1,
     jumpable_frog_in_row(Board, Player, [RowI, NextColI]).
-
 
 
 /**
@@ -920,21 +877,6 @@ keep_jumping(InBoard, PrevJumps, [CurrDest | Rest], [NewJumpSequence | JumpList]
 
     % merge 2 lists of jumps
     append(JumpsFromThisPosition, JumpsFromNextPosition, JumpList).
-
-/**
- * Display CPU Jump
- * display_cpu_jump(+StartPos, +EndPos)
- * Displays a cpu jump.
- * 
- * StartPos -> Starting position.
- * EndPos -> End position.
- */
-display_cpu_jump([StartRow, StartCol], [EndRow, EndCol]) :-
-    index_to_row(StartRow, SRow),
-    index_to_col(StartCol, SCol),
-    index_to_row(EndRow, ERow),
-    index_to_col(EndCol, ECol),
-    display_jump('CPU jumped from ', [SRow, SCol], [ERow, ECol]).
 
 /**
  * Execute Move

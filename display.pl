@@ -792,3 +792,28 @@ display_jump(Msg, StartPos, EndPos) :-
     display_position(StartPos), 
     write(' to '), 
     display_position(EndPos), nl.
+
+/**
+ * Display CPU Jump
+ * display_cpu_jump(+StartPos, +EndPos)
+ * Displays a cpu jump.
+ * 
+ * StartPos -> Starting position.
+ * EndPos -> End position.
+ */
+display_cpu_jump([StartRow, StartCol], [EndRow, EndCol]) :-
+    index_to_row(StartRow, SRow),
+    index_to_col(StartCol, SCol),
+    index_to_row(EndRow, ERow),
+    index_to_col(EndCol, ECol),
+    display_jump('CPU jumped from ', [SRow, SCol], [ERow, ECol]).
+
+/**
+ * Display a error message
+ * error_msg(+Msg)
+ * Displays a error message on screen and fails.
+ *
+ * Msg -> Message to be displayed.
+ */
+error_msg(Msg) :-
+    nl, write(Msg), nl, nl, fail.

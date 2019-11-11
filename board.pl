@@ -10,17 +10,6 @@ player_frog(1, blue).
 player_frog(2, yellow).
 
 /** 
- * Next Player
- * next_player(+Curr, -Next)
- * Returns the player who is next to Curr.
- *
- * Curr -> Player who last played.
- * Next -> Next player to play.
- */
-next_player(1, 2).
-next_player(2, 1).
-
-/** 
  * Iterate values
  * iterate_values(+Current, +Target, -Out)
  * Iterates over the values from Curr to Target, returning them in Out.
@@ -254,3 +243,43 @@ value(Board, Player, Value) :-
     findall(FrogPos, (valid_position(Board, FrogPos), get_position(Board, FrogPos, NextFrog)), NextFrogList),
     length(NextFrogList, NextNumFrogs),
     Value is NumFrogs - NextNumFrogs.
+
+/**
+ * Create empty row
+ * append_rows(+Columns, -OutRow)
+ * Creates an empty row of size Columns
+ * 
+ * Columns -> Number of columns in the row.
+ * OutRow -> Variable to return created empty row.
+ */
+create_empty_row(0, []) :- !.
+create_empty_row(Columns, [empty | EmptyRow]) :-
+    Count is Columns-1,
+    create_empty_row(Count, EmptyRow).
+
+/**
+ * Append rows
+ * append_rows(+Rows, +EmptyRow, -OutBoard)
+ * Creates a new board by appending EmptyRow in an empty list Rows times.
+ * 
+ * Rows -> Number of rows in the board.
+ * EmptyRow -> Row to append.
+ * OutBoard -> Variable to return created empty board.
+ */
+append_rows(0, _, []) :- !.
+append_rows(Rows, EmptyRow, [EmptyRow | OutBoard]) :-
+    Count is Rows-1,
+    append_rows(Count, EmptyRow, OutBoard).
+
+/**
+ * Create empty board
+ * create_empty_board(+Rows, +Columns, -OutBoard)
+ * Creates a new empty board of given dimensions.
+ * 
+ * Rows -> Number of rows in the board.
+ * Columns -> Number of columns in the board.
+ * OutBoard -> Variable to return created empty board.
+ */
+create_empty_board(Rows, Columns, OutBoard) :-
+    create_empty_row(Columns, EmptyRow),
+    append_rows(Rows, EmptyRow, OutBoard).
