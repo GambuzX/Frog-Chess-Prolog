@@ -144,8 +144,15 @@ choose_best_move(FirstValue, FirstMove, SecondValue, SecondMove, BestValue, Best
  */
 valid_moves(Board, Player, ListOfMoves) :-
     player_frog(Player, Frog), 
-    bagof(Pos, (valid_position(Board, Pos), get_position(Board, Pos, Frog)), FrogList), !,%Get the list of frogs
-    generate_jumps(Board, FrogList, ListOfMoves), !.
+    (
+        % get list of Player frogs
+        bagof(Pos, (valid_position(Board, Pos), get_position(Board, Pos, Frog)), FrogList), !,
+
+        % generate jumps for those frogs
+        generate_jumps(Board, FrogList, ListOfMoves);
+
+        ListOfMoves = []
+    ), !.
 
 /**
  * Generate jumps

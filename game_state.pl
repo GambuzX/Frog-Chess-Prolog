@@ -97,3 +97,12 @@ noBlueFrogsLeft([
     [empty, empty, empty, empty, empty, yellow, yellow, empty],
     [empty, empty, empty, empty, empty, empty, empty, empty]
 ]).
+
+testBoard([
+    [empty, empty, empty, empty, empty],
+    [empty, blue, yellow, blue, empty],
+    [empty, blue, yellow, empty, empty],
+    [empty, yellow, empty, blue, empty],
+    [empty, yellow, empty, blue, empty],
+    [empty, empty, empty, empty, empty]
+]).
