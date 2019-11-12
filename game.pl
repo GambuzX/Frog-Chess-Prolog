@@ -491,8 +491,12 @@ continue_jumping(InBoard, Player, [FrogRow, FrogCol], JumpN, OutBoard) :-
  * Value
  * value(+Board, +Player, -Value)
  * Evaluates the given board, assuming current player is Player.
- * Value is defined as the difference between the number of each player frogs.
- * 
+ * Value is defined as the weighted sum of:
+ * - the difference between the number of Player frogs and its opponent.
+ * - the difference between the number of jumps each player can make.
+ * A slightly larger weight was given to the frog difference, since its value
+ * will most times be smaller and we don't want it to be insignificant in the result. 
+ *
  * Board -> Game board.
  * Player -> Current player.
  * Value -> Value of the board.
@@ -501,13 +505,35 @@ value(Board, Player, Value) :-
     player_frog(Player, PlayerFrog),
     findall(FrogPos, (valid_position(Board, FrogPos), get_position(Board, FrogPos, PlayerFrog)), FrogList),
     length(FrogList, NumPlayerFrogs),
+    valid_moves(Board, Player, PlayerValidMoves),
+    length(PlayerValidMoves, PlayerJumpOptions),
 
-    next_player(Player, NextPlayer),
-    player_frog(NextPlayer, OpponentFrog),
+    next_player(Player, Opponent),
+    player_frog(Opponent, OpponentFrog),
     findall(FrogPos, (valid_position(Board, FrogPos), get_position(Board, FrogPos, OpponentFrog)), OpponentFrogList),
     length(OpponentFrogList, NumOpponentFrogs),
+    valid_moves(Board, Opponent, OpponentValidMoves),
+    length(OpponentValidMoves, OpponentJumpOptions),
 
-    Value is NumPlayerFrogs - NumOpponentFrogs.
+    FrogDiff is NumPlayerFrogs - NumOpponentFrogs,
+    JumpOptionsDiff is PlayerJumpOptions - OpponentJumpOptions,
+    /*write('Player has '), write(NumPlayerFrogs), write(' frogs.'), nl,
+    write('Opponent has '), write(NumOpponentFrogs), write(' frogs.'), nl,
+    write('Player has '), write(PlayerJumpOptions), write(' jump options.'), nl,
+    write('Opponent has '), write(OpponentJumpOptions), write(' jump options.'), nl,
+
+    write('Frog Diff is '), write(FrogDiff), nl,
+    write('Jump Options Diff is '), write(JumpOptionsDiff), nl,*/
+
+    (
+        (NumOpponentFrogs = 0; OpponentJumpOptions = 0), !,
+        Value is 5000;
+
+        (NumPlayerFrogs = 0; PlayerJumpOptions = 0), !,
+        Value is -5000;
+
+        Value is (0.6*FrogDiff + 0.4*JumpOptionsDiff)
+    ), !.
 
 
 /**
@@ -653,7 +679,7 @@ player_vs_cpu :-
 
 choose_ai_levels :-
     abolish(cpu_level/2),
-    display_turn(1), !, %Displays Player 1
+    display_cpu_header(1), !, %Displays Player 1
     repeat,
     (
         display_ai_levels,
@@ -662,7 +688,7 @@ choose_ai_levels :-
         nl, nl, !;
         error_msg('Invalid level!')
     ),
-    display_turn(2), !,
+    display_cpu_header(2), !,
     repeat,
     (
         display_ai_levels, 

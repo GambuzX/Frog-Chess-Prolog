@@ -72,6 +72,21 @@ display_turn(Player) :-
     write('  \\===============/  '), nl, nl.
 
 /**
+ * Display CPU header
+ * display_cpu_header(+Player)
+ * Displays an indicator of the current cpu.
+ *
+ * Player -> The cpu number to print in the header.
+ */
+display_cpu_header(Player) :- \+player_color(Player, _), !.
+display_cpu_header(Player) :-
+    player_color(Player, Color),
+
+    write('  /=======\\  '), nl,
+    write('  | '), ansi_format([fg(black), bg(Color)], 'CPU ~d', [Player]), write(' |'), nl,
+    write('  \\=======/  '), nl, nl.
+
+/**
  * Display CPU Turn To Choose The Position Of Frog
  * display_cpu_fill_turn(+Player, +Position)
  * Displays the position choosen by the cpu.
@@ -823,7 +838,7 @@ error_msg(Msg) :-
  * display_ai_levels
  */
 display_ai_levels :-
-    write('Choose one of the following levels:'), nl,
+    write('Choose one of the following CPU levels:'), nl,
     write('\t1- Easy'), nl,
     write('\t2- Medium'), nl,
     write('\t3- Hard'), nl, nl.
