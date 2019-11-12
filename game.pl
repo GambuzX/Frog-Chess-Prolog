@@ -1,11 +1,8 @@
 :- use_module(library(lists)).
-:- use_module(library(unicode)).
 :- include('display.pl').
 :- include('input.pl').
 :- include('board.pl').
 :- include('ai.pl').
-
-:- dynamic cpu_level/2.
 
 /** 
  * Next Player
@@ -626,6 +623,19 @@ pvc_game(InBoard, 2, Level, Winner) :- %Player 2 is the cpu
     ), !.
 
 /**
+ * CPU Level
+ * cpu_level(+CPU, +Level1, +Level2, -Level)
+ * Chooses the cpu level, based on its number
+ *
+ * CPU -> Current cpu.
+ * Level1 -> Level of the first CPU.
+ * Level2 -> Level of the second CPU.
+ * Level -> Level of the current CPU.
+ */
+cpu_level(1, Level1, _, Level1).
+cpu_level(2, _, Level2, Level2).
+    
+/**
  * CPU vs CPU game
  * cvc_game(+InBoard, +Player, -Winner)
  * Plays a cvc game with the given InBoard and starting cpu Player.
@@ -634,9 +644,9 @@ pvc_game(InBoard, 2, Level, Winner) :- %Player 2 is the cpu
  * Player -> Current cpu turn.
  * Winner -> Player who wins the game.
  */
-cvc_game(InBoard, Player, Winner) :-
+cvc_game(InBoard, Player, Player1Level, Player2Level, Winner) :-
     display_game(InBoard, Player, 0),
-    player_level(Player, Level), 
+    cpu_level(Player, Player1Level, Player2Level, Level), 
     cpu_turn(InBoard, Player, Level, MidBoard),
     remove_outer_frogs(MidBoard, FinalBoard), !,
     (
@@ -644,7 +654,7 @@ cvc_game(InBoard, Player, Winner) :-
         display_game(FinalBoard, empty, 0);
 
         next_player(Player, NextPlayer),
-        cvc_game(FinalBoard, NextPlayer, Winner)
+        cvc_game(FinalBoard, NextPlayer, Player1Level, Player2Level, Winner)
     ), !.
 
 /**
@@ -678,26 +688,35 @@ player_vs_cpu :-
     nl,
     display_winner(Winner).
 
-choose_ai_levels :-
-    abolish(cpu_level/2),
-    display_cpu_header(1), !, %Displays Player 1
+/**
+ * Get AI Level
+ * get_ai_level(-Level)
+ * Gets a AI level
+ *
+ * Level -> Level of the CPU.
+ */
+get_ai_level(Level) :-
     repeat,
     (
         display_ai_levels,
-        read_ai_level(Player1Level), !,
-        assertz(player_level(1, Player1Level)), !,
+        read_ai_level(Level), !,
         nl, nl, !;
         error_msg('Invalid level!')
-    ),
+    ).
+
+/**
+ * Choose AI Levels
+ * choose_ai_levels(-CPU1Level, -CPU2Level)
+ * Chooses AI level of the two CPUs
+ *
+ * CPU1Level -> Level of the first CPU.
+ * CPU2Level -> Level of the second CPU.
+ */
+choose_ai_levels(CPU1Level, CPU2Level) :-
+    display_cpu_header(1), !,
+    get_ai_level(CPU1Level),
     display_cpu_header(2), !,
-    repeat,
-    (
-        display_ai_levels, 
-        read_ai_level(Player2Level), !, 
-        assertz(player_level(2, Player2Level)), !, 
-        nl, nl, !;
-        error_msg('Invalid level!')
-    ), !.
+    get_ai_level(CPU2Level), !.
 
 /**
  * CPU vs CPU
@@ -706,9 +725,9 @@ choose_ai_levels :-
  */
 cpu_vs_cpu :-
     random_between(1, 2, FirstPlayer),
-    choose_ai_levels, 
+    choose_ai_levels(Player1Level, Player2Level), 
     init_board(FirstPlayer, 2, InitialBoard), 
-    cvc_game(InitialBoard, FirstPlayer, Winner),
+    cvc_game(InitialBoard, FirstPlayer, Player1Level, Player2Level, Winner),
     nl, 
     display_winner(Winner).
 
@@ -731,6 +750,13 @@ play_game :-
         ),
     play_game_mode(M).
 
+/**
+ * Choose Menu Option
+ * choose_menu_option(+Option)
+ * Chooses a menu option
+ *
+ * Option -> Option to choose (1-Play Game; 2-Instructions; 3-Credits; 4-Exit).
+ */
 choose_menu_option(1) :-
     play_game, !, 
     game_menu, !.
@@ -745,6 +771,11 @@ choose_menu_option(3) :-
 
 choose_menu_option(4). %4 is the exit option
 
+/**
+ * Game Menu
+ * game_menu
+ * Shows the game menu and choose the selected option
+ */
 game_menu :-
     repeat,
         (
