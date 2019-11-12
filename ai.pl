@@ -116,6 +116,7 @@ get_best_move(InBoard, Player, [CurrMov | RestMoves], BestValue, BestMove) :-
     (
         % current move is a winning move
         CurrBoardValue = 5000,
+        BestValue = CurrBoardValue,
         BestMove = CurrMov;
         
         % search for next moves
@@ -123,6 +124,7 @@ get_best_move(InBoard, Player, [CurrMov | RestMoves], BestValue, BestMove) :-
         (
             % found a winning move in RestMoves, return it
             RestBestValue = 5000,
+            BestValue = RestBestValue,
             BestMove = RestBestMove;
 
             % choose between current move and the best found in RestMoves
