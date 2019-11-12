@@ -17,14 +17,18 @@
  * Move -> List with all the jump positions of a move.
  */
 choose_move(Board, Player, 1, Move) :-
-    valid_moves(Board, Player, ListOfMoves),
-    sort(0, @>=, ListOfMoves, [Move|_]), !.
+    valid_moves(Board, Player, ListOfMoves), 
+    random_member(Move, ListOfMoves).
 
 choose_move(Board, Player, 2, Move) :-
     valid_moves(Board, Player, ListOfMoves),
-    get_best_move(Board, Player, ListOfMoves, _, Move), !.
+    sort(0, @>=, ListOfMoves, [Move|_]), !.
 
 choose_move(Board, Player, 3, Move) :-
+    valid_moves(Board, Player, ListOfMoves),
+    get_best_move(Board, Player, ListOfMoves, _, Move), !.
+
+choose_move(Board, Player, 4, Move) :-
     valid_moves(Board, Player, ListOfMoves),
     minimax(Board, Player, ListOfMoves, Move), !.
 
