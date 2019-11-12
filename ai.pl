@@ -34,59 +34,63 @@ minimax(Board, Player, [LastMove|[]], LastMove, Value, WinnerMove) :-
     player_frog(Player, Frog), !, 
     execute_move(Board, Frog, LastMove, false, MidBoard), !,
     remove_outer_frogs(MidBoard, NewBoard), 
-    next_player(Player, NextPlayer), !,
-    %write('executed last move'), nl,
-    get_max_value_from_next_player(NewBoard, NextPlayer, MaxValue, WinMove), !,
-    %write('get_max value from next player'), nl,
+    value(NewBoard, Player, NewBoardValue), 
     (
-        WinMove = true,
-        WinnerMove = LastMove;
-        %write('MAX VALUE'), nl,
-        WinMove = false,
-        Value = MaxValue
+        NewBoardValue = 5000,
+        WinnerMove is LastMove,
+        Value is NewBoardValue;
+
+        next_player(Player, NextPlayer), !,
+        %write('executed last move'), nl,
+        get_max_value_from_next_player(NewBoard, NextPlayer, Value), !,
+        write('LastMove value: '), write(Value), nl
+        %write('get_max value from next player'), nl,
     ), !.
 
 minimax(Board, Player, [FirstMove|OtherMoves], BestMove, Value, WinnerMove) :-
     %write('start minimax'), nl,
     minimax(Board, Player, OtherMoves, OtherBestMove, OtherValue, WinMove),
+    write('minimax call value: '), write(OtherValue), nl,
     %write('end minimax'), nl,
     (
         nonvar(WinMove),
-        %write('Non var'), nl,
-        WinnerMove = WinMove,
-        BestMove = WinnerMove;
+        write('Non var'), nl,
+        WinnerMove is WinMove,
+        write('WinnerMove'), nl,
+        BestMove is WinnerMove,
+        write('BestMove'), nl,
+        Value is OtherValue,
+        write('Value: '), write(Value), nl;
 
         player_frog(Player, Frog), !, 
         execute_move(Board, Frog, FirstMove, false, MidBoard), !,
-        remove_outer_frogs(MidBoard, NewBoard), 
-        next_player(Player, NextPlayer), !,
-        %write('executed move'), nl,
-        get_max_value_from_next_player(NewBoard, NextPlayer, MaxValue, WMove), !,
-        %write('get_max value from next player'), nl,
-        (
-            WMove = true,
-            WinnerMove = FirstMove;
+        remove_outer_frogs(MidBoard, NewBoard),
+        value(NewBoard, Player, NewBoardValue), 
+        ( 
+            NewBoardValue = 5000,
+            WinnerMove is LastMove,
+            BestMove is LastMove,
+            Value is -NewBoardValue ,
+            write('Value1: '), write(Value), nl;
 
-            WMove = false,
-            %write('choose_best_move'), nl,
-            choose_best_move_with_next_values(OtherValue, OtherBestMove, MaxValue, FirstMove, Value, BestMove)
-        ), !
+            next_player(Player, NextPlayer), !,
+            %write('executed move'), nl,
+            get_max_value_from_next_player(NewBoard, NextPlayer, MaxValue), !,
+            write('Max value: '), write(MaxValue), nl,
+            %write('get_max value from next player'), nl,
+
+            choose_best_move_with_next_values(OtherValue, OtherBestMove, MaxValue, FirstMove, Value, BestMove), !
+        )
     ), !.
 
-get_max_value_from_next_player(Board, Player, MaxValue, WinnerMove) :-
+get_max_value_from_next_player(Board, Player, MaxValue) :-
     write('valid_moves'), nl,
     (
         valid_moves(Board, Player, ListOfMoves), !,
         write('ola'), nl,
-        get_best_move_helper(Board, Player, ListOfMoves, MaxValue, _, WinMove),
-        write('alo'), nl,
-        (
-            var(WinMove),
-            WinnerMove = false;
-            WinnerMove = true
-        );
-        MaxValue = 0,
-        WinnerMove = false
+        get_best_move_helper(Board, Player, ListOfMoves, MaxValue, _, _), !,
+        write('alo'), nl;
+        MaxValue is -5000
     ).
 
 /**
@@ -120,12 +124,12 @@ get_best_move_helper(Board, Player, [FirstMove|OtherMoves], BestValue, BestMove,
     player_frog(Player, Frog),
     execute_move(Board, Frog, FirstMove, false, MidBoard),
     remove_outer_frogs(MidBoard, NewBoard),
+    value(NewBoard, Player, NewBoardValue), !,
     (
-        game_over(NewBoard, Player, Player), %if the game ends, and the player won, this is the best move
+        NewBoardValue = 5000, %if the game ends, and the player won, this is the best move
         BestMove = FirstMove,
         WinnerMove = BestMove; 
         
-        value(NewBoard, Player, NewBoardValue), !,
         get_best_move_helper(Board, Player, OtherMoves, NewBestValue, NewBestMove, WinnerMove), !,
         (
             nonvar(WinnerMove), %if the get_best_move_helper returned a value, this is the best value

@@ -637,7 +637,7 @@ cvc_game(InBoard, Player, Winner) :-
     display_game(InBoard, Player, 0),
     player_level(Player, Level), 
     cpu_turn(InBoard, Player, Level, MidBoard),
-    remove_outer_frogs(MidBoard, FinalBoard),
+    remove_outer_frogs(MidBoard, FinalBoard), !,
     (
         game_over(FinalBoard, Player, Winner),
         display_game(FinalBoard, empty, 0);
