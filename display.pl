@@ -865,3 +865,32 @@ display_thank_you_msg :-
     nl, nl,
     ansi_format([fg(blue)], "Thanks for playing Frog Chess!", []), nl, 
     ansi_format([fg(blue)], "Hope you enjoyed it!", []), nl, nl.
+
+/**
+ * Display Instructions
+ * display_instructions
+ */
+display_instructions :-
+    nl, nl,
+    ansi_format([bold], "Last Frog to Jump Wins!", []), nl, nl,
+    write('Frog Chess is played with two players.'), nl, 
+    write('The objective is to be the last frog to jump.'), nl,
+    write('Players start by strategically placing their frogs on the board until all the spaces are filled with frogs.'), nl,
+    write('Players then take turns jumping one another.'), nl,
+    write('When a frog is jumped, it is removed from the board.'), nl,
+    write('Frogs can jump forward, backwards, sideways and diagonally.'), nl,
+    write('Frogs can do single or multiple jumps, even jump their own team frogs if needed.'), nl,
+    write('It is possible to win the game with fewer frogs left on the board than their opponents.'), nl,
+    write('The game moves quickly, and you will find yourself wanting to play again...'), nl, nl.
+
+/**
+ * Display Credits
+ * display_credits
+ */
+display_credits :-
+    nl, nl,
+    write('Game developed by: '), nl,
+    write('\tMario Gil Marinho Mesquita'), nl,
+    write('\tPedro Miguel Rodrigues Ferraz Esteves'), nl, nl,
+    write('Based on the Frog Chess board game by '), 
+    ansi_format([bold], 'Binary Cocoa, LLC', []), write('!'), nl, nl. 
