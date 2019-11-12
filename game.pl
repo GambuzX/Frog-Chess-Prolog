@@ -1,4 +1,5 @@
 :- use_module(library(lists)).
+:- use_module(library(unicode)).
 :- include('display.pl').
 :- include('input.pl').
 :- include('board.pl').
@@ -735,11 +736,11 @@ choose_menu_option(1) :-
     game_menu, !.
 
 choose_menu_option(2) :-
-    %display_instructions, !,
+    display_instructions, !,
     game_menu, !.
 
 choose_menu_option(3) :-
-    %display_credits, !,
+    display_credits, !,
     game_menu, !.
 
 choose_menu_option(4). %4 is the exit option
