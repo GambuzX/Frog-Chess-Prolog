@@ -850,7 +850,7 @@ display_ai_levels :-
  */
 display_menu_options :-
     nl, nl,
-    ansi_format([fg(cyan)], " MAIN MENU ", []), nl, nl,
+    ansi_format([fg(blue)], " MAIN MENU ", []), nl, nl,
     
     write(' 1- Play Game'), nl,
     write(' 2- Instructions'), nl,
