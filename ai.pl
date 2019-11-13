@@ -166,30 +166,6 @@ choose_best_move(FirstValue, FirstMove, SecondValue, SecondMove, BestValue, Best
         BestMove = SecondMove
     ), !.
 
-
-
-choose_best_move_with_next_values(FirstValue, FirstMove, SecondValue, _, BestValue, BestMove) :-
-    FirstValue < SecondValue,
-    BestValue = FirstValue,
-    BestMove = FirstMove.
-
-choose_best_move_with_next_values(FirstValue, _, SecondValue, SecondMove, BestValue, BestMove) :-
-    FirstValue > SecondValue,
-    BestValue = SecondValue,
-    BestMove = SecondMove.
-
-choose_best_move_with_next_values(FirstValue, FirstMove, SecondValue, SecondMove, BestValue, BestMove) :-
-    length(FirstMove, FirstMoveLength),
-    length(SecondMove, SecondMoveLength),
-    (
-        FirstMoveLength < SecondMoveLength,
-        BestValue = FirstValue,
-        BestMove = FirstMove;
-
-        BestValue = SecondValue,
-        BestMove = SecondMove
-    ).
-
 /**
  * Valid Moves
  * valid_moves(+Board, +Player, -ListOfMoves)
