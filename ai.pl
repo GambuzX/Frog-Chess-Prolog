@@ -17,128 +17,120 @@
  * Move -> List with all the jump positions of a move.
  */
 choose_move(Board, Player, 1, Move) :-
-    valid_moves(Board, Player, ListOfMoves), !,
-    sort(0, @>=, ListOfMoves, [Move|_]), !.
+    valid_moves(Board, Player, ListOfMoves), 
+    random_member(Move, ListOfMoves).
 
 choose_move(Board, Player, 2, Move) :-
-    valid_moves(Board, Player, ListOfMoves), !,
-    get_best_move(Board, Player, ListOfMoves, Move), !.
+    valid_moves(Board, Player, ListOfMoves),
+    sort(0, @>=, ListOfMoves, [Move|_]), !.
 
 choose_move(Board, Player, 3, Move) :-
-    valid_moves(Board, Player, ListOfMoves), !,
-    %write('after valid_moves'), nl,
-    minimax(Board, Player, ListOfMoves, Move, _, _).
-   
-minimax(Board, Player, [LastMove|[]], LastMove, Value, WinnerMove) :-
-   % write('last minimax'),
-    player_frog(Player, Frog), !, 
-    execute_move(Board, Frog, LastMove, false, MidBoard), !,
-    remove_outer_frogs(MidBoard, NewBoard), 
-    value(NewBoard, Player, NewBoardValue), 
-    (
-        NewBoardValue = 5000,
-        WinnerMove is LastMove,
-        Value is NewBoardValue;
+    valid_moves(Board, Player, ListOfMoves),
+    get_best_move(Board, Player, ListOfMoves, _, Move), !.
 
-        next_player(Player, NextPlayer), !,
-        %write('executed last move'), nl,
-        get_max_value_from_next_player(NewBoard, NextPlayer, Value), !,
-        write('LastMove value: '), write(Value), nl
-        %write('get_max value from next player'), nl,
+choose_move(Board, Player, 4, Move) :-
+    valid_moves(Board, Player, ListOfMoves),
+    minimax(Board, Player, ListOfMoves, Move), !.
+
+
+
+minimax(Board, Player, ListOfMoves, Choice) :-
+    minimax_helper(Board, Player, ListOfMoves, _, Choice).
+
+minimax_helper(Board, Player, [LastMove | []], LastMoveValue, LastMove) :-
+    % execute last move and check its value
+    player_frog(Player, Frog),
+    execute_move(Board, Frog, LastMove, false, MidBoard),
+    remove_outer_frogs(MidBoard, CurrBoard),
+    value(CurrBoard, Player, CurrBoardValue),
+    (
+        % choose current move value if it wins
+        CurrBoardValue = 5000,
+        LastMoveValue = CurrBoardValue;        
+
+        % otherwise, see opponent moves
+        next_player(Player, Opponent),
+        valid_moves(CurrBoard, Opponent, OpponentMoves),
+        get_best_move(CurrBoard, Opponent, OpponentMoves, BestOponnentMoveValue, _),
+        LastMoveValue is BestOponnentMoveValue * (-1)
     ), !.
 
-minimax(Board, Player, [FirstMove|OtherMoves], BestMove, Value, WinnerMove) :-
-    %write('start minimax'), nl,
-    minimax(Board, Player, OtherMoves, OtherBestMove, OtherValue, WinMove),
-    write('minimax call value: '), write(OtherValue), nl,
-    %write('end minimax'), nl,
+minimax_helper(Board, Player, [CurrMove | RestMoves], BestValue, BestMove) :-
+    % execute current move
+    player_frog(Player, Frog),
+    execute_move(Board, Frog, CurrMove, false, MidBoard),
+    remove_outer_frogs(MidBoard, CurrBoard),
+
+    % check current board value and handle it
+    value(CurrBoard, Player, CurrBoardValue),
     (
-        nonvar(WinMove),
-        write('Non var'), nl,
-        WinnerMove is WinMove,
-        write('WinnerMove'), nl,
-        BestMove is WinnerMove,
-        write('BestMove'), nl,
-        Value is OtherValue,
-        write('Value: '), write(Value), nl;
+        % choose current move if it wins
+        CurrBoardValue = 5000,
+        BestValue = CurrBoardValue,
+        BestMove = CurrMove;
 
-        player_frog(Player, Frog), !, 
-        execute_move(Board, Frog, FirstMove, false, MidBoard), !,
-        remove_outer_frogs(MidBoard, NewBoard),
-        value(NewBoard, Player, NewBoardValue), 
-        ( 
-            NewBoardValue = 5000,
-            WinnerMove is LastMove,
-            BestMove is LastMove,
-            Value is -NewBoardValue ,
-            write('Value1: '), write(Value), nl;
+        % check best move among the remaining moves
+        minimax_helper(Board, Player, RestMoves, RestBestValue, RestBestMove),
+        (
+            % already found a winner move in remaining moves
+            RestBestValue = 5000,
+            BestValue = RestBestValue,
+            BestMove = RestBestMove;
 
-            next_player(Player, NextPlayer), !,
-            %write('executed move'), nl,
-            get_max_value_from_next_player(NewBoard, NextPlayer, MaxValue), !,
-            write('Max value: '), write(MaxValue), nl,
-            %write('get_max value from next player'), nl,
-
-            choose_best_move_with_next_values(OtherValue, OtherBestMove, MaxValue, FirstMove, Value, BestMove), !
-        )
+            % check best move opponent can make in the current board
+            next_player(Player, Opponent),
+            valid_moves(CurrBoard, Opponent, OpponentMoves),
+            get_best_move(CurrBoard, Opponent, OpponentMoves, BestOponnentMoveValue, _),
+            % decide between current options
+            CurrBestValue is BestOponnentMoveValue * (-1),
+            choose_best_move(CurrBestValue, CurrMove, RestBestValue, RestBestMove, BestValue, BestMove)
+        ), !
     ), !.
-
-get_max_value_from_next_player(Board, Player, MaxValue) :-
-    write('valid_moves'), nl,
-    (
-        valid_moves(Board, Player, ListOfMoves), !,
-        write('ola'), nl,
-        get_best_move_helper(Board, Player, ListOfMoves, MaxValue, _, _), !,
-        write('alo'), nl;
-        MaxValue is -5000
-    ).
 
 /**
  * Get best move
- * get_best_move(+Board, +Player, +ListOfMoves, -BestMove)
- * Gets the best move of a list of moves
+ * get_best_move(+Board, +Player, +ListOfMoves, ?BestMoveValue, -BestMove)
+ * Gets the best move of a list of moves.
  *
  * Board -> Game board.
  * Player -> Player number.
  * ListOfMoves -> List with all the possible moves of Player.
+ * BestMoveValue -> The value of the best move. If it is a winning move, its equal to 5000.
  * BestMove -> The best move for the Player.
  */
-get_best_move(Board, Player, ListOfMoves, BestMove) :-
-    get_best_move_helper(Board, Player, ListOfMoves, _, BestMove, _).
-
-/**
- * Get best move helper
- * get_best_move_helper(+Board, +Player, +ListOfMoves, ?Value, -BestMove, ?WinnerMove)
- * Gets the best move of a list of moves
- *
- * Board -> Game board.
- * Player -> Player number.
- * ListOfMoves -> List with all the possible moves of Player.
- * Value -> The value of the best move.
- * BestMove -> The best move for the Player.
- * WinnerMove -> Auxiliar variable that is used to check if some move wins the game.
- */
-get_best_move_helper(Board, Player, [LastMove|[]], Value, LastMove, _) :- value(Board, Player, Value).
-
-get_best_move_helper(Board, Player, [FirstMove|OtherMoves], BestValue, BestMove, WinnerMove) :-
+get_best_move(InBoard, Player, [LastMove | []], LastMoveValue, LastMove) :-
+    % execute last move and calculate its value
     player_frog(Player, Frog),
-    execute_move(Board, Frog, FirstMove, false, MidBoard),
-    remove_outer_frogs(MidBoard, NewBoard),
-    value(NewBoard, Player, NewBoardValue), !,
-    (
-        NewBoardValue = 5000, %if the game ends, and the player won, this is the best move
-        BestMove = FirstMove,
-        WinnerMove = BestMove; 
-        
-        get_best_move_helper(Board, Player, OtherMoves, NewBestValue, NewBestMove, WinnerMove), !,
-        (
-            nonvar(WinnerMove), %if the get_best_move_helper returned a value, this is the best value
-            BestMove = NewBestMove;
+    execute_move(InBoard, Frog, LastMove, false, MidBoard),
+    remove_outer_frogs(MidBoard, CurrBoard),
+    value(CurrBoard, Player, LastMoveValue), !.
 
-            var(WinnerMove), 
-            choose_best_move(NewBoardValue, FirstMove, NewBestValue, NewBestMove, BestValue, BestMove), !
-        )
-    ).
+get_best_move(InBoard, Player, [CurrMov | RestMoves], BestValue, BestMove) :-
+    % execute current move
+    player_frog(Player, Frog),
+    execute_move(InBoard, Frog, CurrMov, false, MidBoard),
+    remove_outer_frogs(MidBoard, CurrBoard),
+
+    % calculate resulting board's value and handle it
+    value(CurrBoard, Player, CurrBoardValue), !,
+    (
+        % current move is a winning move
+        CurrBoardValue = 5000,
+        BestValue = CurrBoardValue,
+        BestMove = CurrMov;
+        
+        % search for next moves
+        get_best_move(InBoard, Player, RestMoves, RestBestValue, RestBestMove), !,
+        (
+            % found a winning move in RestMoves, return it
+            RestBestValue = 5000,
+            BestValue = RestBestValue,
+            BestMove = RestBestMove;
+
+            % choose between current move and the best found in RestMoves
+            choose_best_move(CurrBoardValue, CurrMov, RestBestValue, RestBestMove, BestValue, BestMove)
+        ), !
+    ), !.
 
 /**
  * Choose best move
@@ -172,29 +164,7 @@ choose_best_move(FirstValue, FirstMove, SecondValue, SecondMove, BestValue, Best
 
         BestValue = SecondValue,
         BestMove = SecondMove
-    ).
-
-choose_best_move_with_next_values(FirstValue, FirstMove, SecondValue, _, BestValue, BestMove) :-
-    FirstValue < SecondValue,
-    BestValue = FirstValue,
-    BestMove = FirstMove.
-
-choose_best_move_with_next_values(FirstValue, _, SecondValue, SecondMove, BestValue, BestMove) :-
-    FirstValue > SecondValue,
-    BestValue = SecondValue,
-    BestMove = SecondMove.
-
-choose_best_move_with_next_values(FirstValue, FirstMove, SecondValue, SecondMove, BestValue, BestMove) :-
-    length(FirstMove, FirstMoveLength),
-    length(SecondMove, SecondMoveLength),
-    (
-        FirstMoveLength < SecondMoveLength,
-        BestValue = FirstValue,
-        BestMove = FirstMove;
-
-        BestValue = SecondValue,
-        BestMove = SecondMove
-    ).
+    ), !.
 
 /**
  * Valid Moves

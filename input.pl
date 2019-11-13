@@ -270,7 +270,7 @@ read_game_dimensions(Rows, Columns) :-
 read_ai_level(Level) :-
     read_single_integer(Level),
     Level >= 1,
-    Level =< 3,
+    Level =< 4,
     write(Level).
 
 read_menu_option(Option) :-

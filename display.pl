@@ -841,7 +841,8 @@ display_ai_levels :-
     write('Choose one of the following CPU levels:'), nl,
     write('\t1- Easy'), nl,
     write('\t2- Medium'), nl,
-    write('\t3- Hard'), nl, nl.
+    write('\t3- Hard'), nl,
+    write('\t4- Expert'), nl, nl.
 
 /**
  * Display Menu Options
