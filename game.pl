@@ -225,8 +225,8 @@ frog_can_jump(Board, FrogPos, Dest) :-
     player_frog(_, MidFrog).
 
 /**
- * Jump
- * jump(+InputBoard, +StartPos, +MidPosition, +EndPosition, +Frog, -OutputBoard)
+ * Move
+ * move(+InputBoard, +StartPos, +MidPosition, +EndPosition, +Frog, -OutputBoard)
  * Jumps a frog from starting position to end position, updating all required cells.
  * Does not perform any validation.
  * 
@@ -237,7 +237,7 @@ frog_can_jump(Board, FrogPos, Dest) :-
  * Frog -> Frog that is jumping.
  * OutputBoard -> Modified board after jumping.
  */
-jump(InBoard, StartPos, MidPos, EndPos, Frog, OutBoard) :-
+move(InBoard, StartPos, MidPos, EndPos, Frog, OutBoard) :-
     
     % set middle position empty
     set_position(InBoard, MidPos, empty, NewBoard1),
@@ -467,7 +467,7 @@ continue_jumping(InBoard, Player, [FrogRow, FrogCol], JumpN, OutBoard) :-
             read_end_position(InBoard, [FrogRow, FrogCol], MidPos, EndPos),
             get_position(InBoard, [FrogRow, FrogCol], Frog),
             
-            jump(InBoard, [FrogRow, FrogCol], MidPos, EndPos, Frog, NewBoard),
+            move(InBoard, [FrogRow, FrogCol], MidPos, EndPos, Frog, NewBoard),
             
             % display updated board
             display_game(NewBoard, Player, JumpN),
@@ -548,7 +548,7 @@ player_turn(InBoard, Player, OutBoard) :-
     repeat,
         read_jump_positions(InBoard, Player, InitPos, MidPos, EndPos, Frog), !,
 
-    jump(InBoard, InitPos, MidPos, EndPos, Frog, NewBoard),
+    move(InBoard, InitPos, MidPos, EndPos, Frog, NewBoard),
 
     display_game(NewBoard, Player, 1),
 
