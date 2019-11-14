@@ -530,7 +530,7 @@ value(Board, Player, Value) :-
         (NumPlayerFrogs = 0; PlayerJumpOptions = 0), !,
         Value is -5000;
 
-        Value is (0.6*FrogDiff + 0.4*JumpOptionsDiff)
+        Value is (0.7*FrogDiff + 0.3*JumpOptionsDiff)
     ), !.
 
 
