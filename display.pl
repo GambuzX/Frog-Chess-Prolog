@@ -1,4 +1,4 @@
-:- include(library(ansi_term)). % library used to display colored output
+%:- include(library(ansi_term)). % library used to display colored output
 
 /**
  * Player Color
