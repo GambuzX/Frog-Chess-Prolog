@@ -267,12 +267,26 @@ read_game_dimensions(Rows, Columns) :-
     ),
     nl.
 
+/**
+ * Reads the ai level
+ * read_ai_level(-Level)
+ * Reads an integer between 1 and 4.
+ *
+ * Level -> Level of the AI.
+ */
 read_ai_level(Level) :-
     read_single_integer(Level),
     Level >= 1,
     Level =< 4,
     write(Level).
 
+/**
+ * Reads the menu option
+ * read_menu_option(-Option)
+ * Reads an integer between 1 and 4.
+ *
+ * Option -> Selected menu option.
+ */
 read_menu_option(Option) :-
     read_single_integer(Option), 
     Option >= 1,

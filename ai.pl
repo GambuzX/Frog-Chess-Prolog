@@ -1,4 +1,3 @@
-
 %%%%%%%%%%%%%%%%%%%%
 %                  %
 %        AI        %
@@ -14,6 +13,7 @@
  *
  * Board -> Initial Board.
  * Player -> Player number.
+ * Level -> Level of the AI.
  * Move -> List with all the jump positions of a move.
  */
 choose_move(Board, Player, 1, Move) :-
@@ -33,10 +33,34 @@ choose_move(Board, Player, 4, Move) :-
     minimax(Board, Player, ListOfMoves, Move), !.
 
 
-
+/**
+ * Minimax
+ * minimax(+Board, +Player, +ListOfMoves, -Choice)
+ * Chooses a move from a ListOfMoves using Minimax algorithm.
+ * Chooses the move which will lead to the worst best case scenario for the opponent.
+ * Calls minimax_helper.
+ *
+ * Board -> Initial Board.
+ * Player -> Player number.
+ * ListOfMoves -> List with all possible moves.
+ * Choice -> Choosen move.
+ */
 minimax(Board, Player, ListOfMoves, Choice) :-
     minimax_helper(Board, Player, ListOfMoves, _, Choice).
 
+/**
+ * Minimax helper
+ * minimax(+Board, +Player, +ListOfMoves, -BestValue, -BestMove)
+ * Chooses a move from a ListOfMoves using Minimax algorithm.
+ * Chooses the move which will lead to the worst best case scenario for the opponent.
+ * In each step, BestValue and BestMove represent the best options for the remaining ListOfMoves.
+ *
+ * Board -> Initial Board.
+ * Player -> Player number.
+ * ListOfMoves -> List with all possible moves.
+ * BestValue -> Best value found so far.
+ * BestMove -> Best move found so far.
+ */
 minimax_helper(Board, Player, [LastMove | []], LastMoveValue, LastMove) :-
     % execute last move and check its value
     player_frog(Player, Frog),

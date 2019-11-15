@@ -252,8 +252,17 @@ move([StartPos, EndPos], InBoard, OutBoard) :-
     set_position(NewBoard2, EndPos, Frog, OutBoard).
 
 
-read_end_position(Board, InitPos, EndPos) :-
-    
+/**
+ * Read end position
+ * read_end_position(+Board, +InitPos, -EndPosition)
+ * Asks the user for a end position for a jump starting at InitPos.
+ * Validates user input. 
+ *
+ * Board -> Game board.
+ * InitPos -> Jump initial position.
+ * EndPosition -> Ending position of the jump.
+ */
+read_end_position(Board, InitPos, EndPos) :-    
     (
         read_position(Board, 'Position to jump? ', EndPos),
         get_position(Board, EndPos, empty),
@@ -522,7 +531,7 @@ value(Board, Player, Value) :-
         (NumPlayerFrogs = 0; PlayerJumpOptions = 0), !,
         Value is -5000;
 
-        Value is (0.9*FrogDiff + 0.1*JumpOptionsDiff)
+        Value is ((0.9*FrogDiff + 0.1*JumpOptionsDiff) / (FrogDiff + JumpOptionsDiff))
     ), !.
 
 
