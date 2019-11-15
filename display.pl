@@ -442,7 +442,6 @@ display_div_line(0) :- !.
 display_div_line(Count) :-
     Count > 0,
     put_code(205), % ═
-    %put_char('\u2550'),
     N is Count-1,
     display_div_line(N).
 
@@ -895,3 +894,14 @@ display_credits :-
     write('\tPedro Miguel Rodrigues Ferraz Esteves'), nl, nl,
     write('Based on the Frog Chess board game by '), 
     ansi_format([bold], 'Binary Cocoa, LLC', []), write('!'), nl, nl. 
+
+/**
+ * Display CPU thinking message
+ * display_cpu_think_msg(+CPU)
+ *
+ * CPU -> CPU that is thinking
+ */
+display_cpu_think_msg(CPU) :-
+    nl,
+    player_color(CPU, Color), 
+    ansi_format([fg(Color)], 'CPU ~d is thinking...', [CPU]), nl, nl.

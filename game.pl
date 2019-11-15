@@ -524,14 +524,18 @@ value(Board, Player, Value) :-
 
     FrogDiff is NumPlayerFrogs - NumOpponentFrogs,
     JumpOptionsDiff is PlayerJumpOptions - OpponentJumpOptions,
+    Divisor is FrogDiff + JumpOptionsDiff,
     (
         (NumOpponentFrogs = 0; OpponentJumpOptions = 0), !,
         Value is 5000;
 
         (NumPlayerFrogs = 0; PlayerJumpOptions = 0), !,
         Value is -5000;
+        
+        Divisor = 0,
+        Value is 0;
 
-        Value is ((0.9*FrogDiff + 0.1*JumpOptionsDiff) / (FrogDiff + JumpOptionsDiff))
+        Value is ((0.9*FrogDiff + 0.1*JumpOptionsDiff) / Divisor)
     ), !.
 
 
@@ -566,6 +570,7 @@ player_turn(InBoard, Player, OutBoard) :-
  * OutBoard -> Modified board after turn ends.
  */
 cpu_turn(InBoard, Player, Level, OutBoard) :-
+    display_cpu_think_msg(Player),
     choose_move(InBoard, Player, Level, Move), !,    
     ansi_format([fg(blue)], 'CPU MOVE', []), nl, wait_for_input,
     player_frog(Player, Frog), !,
