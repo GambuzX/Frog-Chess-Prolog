@@ -226,19 +226,22 @@ frog_can_jump(Board, FrogPos, Dest) :-
 
 /**
  * Move
- * move(+InputBoard, +StartPos, +MidPosition, +EndPosition, +Frog, -OutputBoard)
- * Jumps a frog from starting position to end position, updating all required cells.
+ * move(+Move, +InputBoard, -OutputBoard)
+ * Performs specified move on the board, updating all required cells.
  * Does not perform any validation.
  * 
+ * Move -> List containing [StartPosition, EndPosition].
  * InputBoard -> Initial board before jumping.
- * StartPosition -> Starting position.
- * MidPosition -> Position between Start and End.
- * EndPosition -> Ending position.
- * Frog -> Frog that is jumping.
  * OutputBoard -> Modified board after jumping.
  */
-move(InBoard, StartPos, MidPos, EndPos, Frog, OutBoard) :-
+move([StartPos, EndPos], InBoard, OutBoard) :-
     
+    % frog that is jumping
+    get_position(InBoard, StartPos, Frog),
+
+    % position between start and end
+    middle_position(StartPos, EndPos, MidPos),
+
     % set middle position empty
     set_position(InBoard, MidPos, empty, NewBoard1),
 
@@ -249,7 +252,7 @@ move(InBoard, StartPos, MidPos, EndPos, Frog, OutBoard) :-
     set_position(NewBoard2, EndPos, Frog, OutBoard).
 
 
-read_end_position(Board, InitPos, MidPos, EndPos) :-
+read_end_position(Board, InitPos, EndPos) :-
     
     (
         read_position(Board, 'Position to jump? ', EndPos),
@@ -272,18 +275,16 @@ read_end_position(Board, InitPos, MidPos, EndPos) :-
 
 /**
  * Read jump positions
- * read_jump_positions(+Board, +Player, -StartPos, -MidPosition, -EndPosition, -Frog)
+ * read_jump_positions(+Board, +Player, -StartPos, -EndPosition)
  * Asks the user for input regarding the positions for the frog jump.
  * Asks for start position and end position, until a valid option is provided.
  * 
  * Board -> Game board.
  * Player -> Player of current turn.
  * StartPosition -> Starting position.
- * MidPosition -> Position between Start and End.
  * EndPosition -> Ending position.
- * Frog -> Frog that is jumping.
  */
-read_jump_positions(Board, Player, InitPos, MidPos, EndPos, Frog) :-
+read_jump_positions(Board, Player, InitPos, EndPos) :-
     % starting position
     repeat,
         (
@@ -296,7 +297,7 @@ read_jump_positions(Board, Player, InitPos, MidPos, EndPos, Frog) :-
         ),
 
     % end position
-    read_end_position(Board, InitPos, MidPos, EndPos).
+    read_end_position(Board, InitPos, EndPos).
 
 
 /**
@@ -464,10 +465,9 @@ continue_jumping(InBoard, Player, [FrogRow, FrogCol], JumpN, OutBoard) :-
             nl, display_position('Frog at position: ', [Row, Col]),
 
             % read jump destination
-            read_end_position(InBoard, [FrogRow, FrogCol], MidPos, EndPos),
-            get_position(InBoard, [FrogRow, FrogCol], Frog),
+            read_end_position(InBoard, [FrogRow, FrogCol], EndPos),
             
-            move(InBoard, [FrogRow, FrogCol], MidPos, EndPos, Frog, NewBoard),
+            move([[FrogRow, FrogCol], EndPos], InBoard, NewBoard),
             
             % display updated board
             display_game(NewBoard, Player, JumpN),
@@ -515,14 +515,6 @@ value(Board, Player, Value) :-
 
     FrogDiff is NumPlayerFrogs - NumOpponentFrogs,
     JumpOptionsDiff is PlayerJumpOptions - OpponentJumpOptions,
-    /*write('Player has '), write(NumPlayerFrogs), write(' frogs.'), nl,
-    write('Opponent has '), write(NumOpponentFrogs), write(' frogs.'), nl,
-    write('Player has '), write(PlayerJumpOptions), write(' jump options.'), nl,
-    write('Opponent has '), write(OpponentJumpOptions), write(' jump options.'), nl,
-
-    write('Frog Diff is '), write(FrogDiff), nl,
-    write('Jump Options Diff is '), write(JumpOptionsDiff), nl,*/
-
     (
         (NumOpponentFrogs = 0; OpponentJumpOptions = 0), !,
         Value is 5000;
@@ -530,7 +522,7 @@ value(Board, Player, Value) :-
         (NumPlayerFrogs = 0; PlayerJumpOptions = 0), !,
         Value is -5000;
 
-        Value is (0.7*FrogDiff + 0.3*JumpOptionsDiff)
+        Value is (0.9*FrogDiff + 0.1*JumpOptionsDiff)
     ), !.
 
 
@@ -546,9 +538,9 @@ value(Board, Player, Value) :-
 player_turn(InBoard, Player, OutBoard) :-
     % read jump positions until valid
     repeat,
-        read_jump_positions(InBoard, Player, InitPos, MidPos, EndPos, Frog), !,
+        read_jump_positions(InBoard, Player, InitPos, EndPos), !,
 
-    move(InBoard, InitPos, MidPos, EndPos, Frog, NewBoard),
+    move([InitPos, EndPos], InBoard, NewBoard),
 
     display_game(NewBoard, Player, 1),
 

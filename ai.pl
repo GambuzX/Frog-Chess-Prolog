@@ -242,9 +242,7 @@ keep_jumping(InBoard, PrevJumps, [CurrDest | Rest], [NewJumpSequence | JumpList]
 
     % get board after the last jump
     last(PrevJumps, CurrPosition), % get current position
-    get_position(InBoard, CurrPosition, Frog), % determine frog
-    middle_position(CurrPosition, CurrDest, MidPos), % get middle position
-    move(InBoard, CurrPosition, MidPos, CurrDest, Frog, NewBoard), % jump
+    move([CurrPosition, CurrDest], InBoard, NewBoard), % jump
 
     % keep jumping from this position
     get_jumps(NewBoard, NewJumpSequence, JumpsFromThisPosition),
@@ -286,8 +284,7 @@ execute_move(InBoard, Frog, PositionList, false, OutputBoard) :-
 execute_move_helper(Board, _, [_ | []], _, Board) :- !. % If there is only one position, there are no more jumps
 
 execute_move_helper(InBoard, Frog, [StartPos, EndPos| OtherPos], JumpN, OutBoard) :-
-    middle_position(StartPos, EndPos, MidPos),
-    move(InBoard, StartPos, MidPos, EndPos, Frog, NewBoard),
+    move([StartPos, EndPos], InBoard, NewBoard),
     player_frog(Player, Frog),
     display_game(NewBoard, Player, JumpN),
     display_cpu_jump(StartPos, EndPos),
@@ -309,6 +306,5 @@ execute_move_helper(InBoard, Frog, [StartPos, EndPos| OtherPos], JumpN, OutBoard
 execute_move_helper(Board, _, [_| []], Board) :- !. % If there is only one position, there are no more jumps
 
 execute_move_helper(InBoard, Frog, [StartPos, EndPos| OtherPos], OutBoard) :-
-    middle_position(StartPos, EndPos, MidPos),
-    move(InBoard, StartPos, MidPos, EndPos, Frog, NewBoard),
+    move([StartPos, EndPos], InBoard, NewBoard),
     execute_move_helper(NewBoard, Frog, [EndPos| OtherPos], OutBoard).
