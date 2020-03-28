@@ -10,6 +10,10 @@ Frog Chess game implemented in Prolog.
 ### Technologies and Software Used
 * SWI Prolog
 
+### Group Members
+* [Mário Gil](https://github.com/GambuzX "GambuzX")
+* [Pedro Esteves](https://github.com/pemesteves "pemesteves")
+
 ### Curricular Unit Info
 * **Date:** 3rd Year, 1st Semester, 2019/2020
 * **Course:** [Programação em Lógica | Logic Programming ](https://sigarra.up.pt/feup/en/UCURR_GERAL.FICHA_UC_VIEW?pv_ocorrencia_id=436444 "PLOG") (PLOG)
